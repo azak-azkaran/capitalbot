@@ -1,4 +1,5 @@
 import http.client
+import json
 
 CAPITAL_BACKEND = "api-capital.backend-capital.com"
 CAPITAL_BACKEND_DEMO = "demo-api-capital.backend-capital.com"
@@ -21,7 +22,7 @@ def capitalPing(security_token, cst_token, demo = True):
     data = res.read()
     print(data.decode("utf-8"))
 
-def capitalServerTime(demo = True):
+def serverTime(demo = True):
     conn = _getConnection(demo)
     payload = ''
     headers = {}
@@ -29,7 +30,7 @@ def capitalServerTime(demo = True):
     res = conn.getresponse()
     return res
 
-def capitalDownload(symbol, token, cst, period, interval, security_token, cst_token, demo = True):
+def Download(symbol, token, cst, period, interval, security_token, cst_token, demo = True):
     conn = _getConnection(demo)
     payload = ''
     headers = {
@@ -42,8 +43,8 @@ def capitalDownload(symbol, token, cst, period, interval, security_token, cst_to
     data = res.read()
     print(data.decode("utf-8"))
 
-def capitalCreateSession(security_token, demo = True):
-    conn = http.client.HTTPSConnection("api-capital.backend-capital.com")
+def GetEncryptionKey(security_token, demo = True):
+    conn = _getConnection(demo)
     payload = ''
     headers = {
       'X-CAP-API-KEY': security_token
@@ -52,3 +53,22 @@ def capitalCreateSession(security_token, demo = True):
     res = conn.getresponse()
     data = res.read()
     print(data.decode("utf-8"))
+
+def createSession(api_key,password,identifier, demo = True):
+    conn = _getConnection(demo)
+    payload = json.dumps({
+      "identifier": identifier,
+      "password": password
+    })
+    headers = {
+      'X-CAP-API-KEY': api_key,
+      'Content-Type': 'application/json'
+    }
+    conn.request("POST", "/api/v1/session", payload, headers)
+    res = conn.getresponse()
+    if res.getcode() == 200:
+        data = res.read()
+        security_token = res.headers["X-SECURITY-TOKEN"]
+        cst = res.headers["CST"]
+        return data, security_token, cst
+    raise ValueError

@@ -1,5 +1,6 @@
 import http.client
 import capital 
+import yaml
 
 
 def test__GetConnection():
@@ -7,8 +8,8 @@ def test__GetConnection():
     assert conn != None
     assert conn.host == capital.CAPITAL_BACKEND_DEMO
 
-def test__capitalServerTime():
-    res = capital.capitalServerTime(True)
+def test__serverTime():
+    res = capital.serverTime(True)
     assert res != None
     assert res.getcode() == 200
     data = res.read()
@@ -16,5 +17,17 @@ def test__capitalServerTime():
     res.close()
     assert res.closed == True
 
-def test__capitalCreateSession():
-    res = capital.capitalCreateSession(security_token= , True)
+def test__createSession():
+    with open('config.yaml', 'r') as file:
+        conf = yaml.safe_load(file)
+        assert conf != None
+        assert conf["capital"] != None
+
+        api_key = conf["capital"]["api_key"]
+        password = conf["capital"]["password"]
+        identifier = conf["capital"]["identifier"]
+        assert api_key != None
+        assert password != None
+        assert identifier != None
+
+        res,security,cst = capital.createSession(api_key,password,identifier, demo=True)
