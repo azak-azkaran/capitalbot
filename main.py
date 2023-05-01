@@ -3,25 +3,16 @@ from supertrend import Supertrend
 import yfinance as yf
 import matplotlib.pyplot as plt
 
-def yahoo(symbol,period,interval):
-    df = yf.download(symbol, period=period,interval=interval)
-    return df
-
 def main():
     parser = argparse.ArgumentParser(description="List fish in aquarium.")
     parser.add_argument("symbol", type=str)
     parser.add_argument("period", type=int)
     parser.add_argument("multiplier", type=int)
-    parser.add_argument("provider", type=str)
     args = parser.parse_args()
     """
     main
     """
-
-    if(args.provider == "yahoo"):
-        df = yahoo(args.symbol, "5d", "1m")
-    else:
-        df = capital(args.symbol, , )
+    df = yf.download(args.symbol, period="5d",interval="2m")
 
     supertrend = Supertrend(df, args.period, args.multiplier)
     df = df.join(supertrend)
