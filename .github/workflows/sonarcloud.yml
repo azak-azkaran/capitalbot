@@ -69,6 +69,7 @@ jobs:
             -Dsonar.projectKey=azak-azkaran_capitalbot
             -Dsonar.organization=azak-azkaran-github
             -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.python.version=3
             # Comma-separated paths to directories containing main source files.
             #-Dsonar.sources= # optional, default is project base directory
             # When you need the analysis to take place in a directory other than the one from which it was launched
