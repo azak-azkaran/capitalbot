@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime
 import math
 
-def Supertrend(df, atr_period, multiplier):
+def supertrend(df, atr_period, multiplier):
     high = df['High']
     low = df['Low']
     close = df['Close']

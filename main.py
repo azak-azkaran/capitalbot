@@ -1,5 +1,5 @@
 import argparse
-from supertrend import Supertrend
+from supertrend import supertrend
 import yfinance as yf
 import matplotlib.pyplot as plt
 
@@ -12,9 +12,9 @@ def main():
     """
     main
     """
-    df = yf.download(args.symbol, period="5d",interval="2m")
+    df = yf.download(args.symbol, period="5d",interval="2m", )
 
-    supertrend = Supertrend(df, args.period, args.multiplier)
+    supertrend = supertrend(df, args.period, args.multiplier)
     df = df.join(supertrend)
 
     plt.plot(df['Close'], label='Close Price')

@@ -1,5 +1,7 @@
 import http.client
 import json
+import pandas as pd
+
 
 CAPITAL_BACKEND = "api-capital.backend-capital.com"
 CAPITAL_BACKEND_DEMO = "demo-api-capital.backend-capital.com"
@@ -30,7 +32,7 @@ def serverTime(demo = True):
     res = conn.getresponse()
     return res
 
-def Download(symbol, token, cst, period, interval, security_token, cst_token, demo = True):
+def Download(symbol, security_token, cst_token, period, interval, demo = True):
     conn = _getConnection(demo)
     payload = ''
     headers = {
@@ -41,7 +43,10 @@ def Download(symbol, token, cst, period, interval, security_token, cst_token, de
     conn.request("GET", url, payload, headers)
     res = conn.getresponse()
     data = res.read()
-    print(data.decode("utf-8"))
+
+    jdata = json.loads(data.decode("utf-8"))
+    df = pd.DataFrame.from_dict(pd.json_normalize( jdata["prices"] ))
+    return df
 
 def GetEncryptionKey(security_token, demo = True):
     conn = _getConnection(demo)
@@ -52,7 +57,8 @@ def GetEncryptionKey(security_token, demo = True):
     conn.request("GET", "/api/v1/session/encryptionKey", payload, headers)
     res = conn.getresponse()
     data = res.read()
-    print(data.decode("utf-8"))
+    return data
+
 
 def createSession(api_key,password,identifier, demo = True):
     conn = _getConnection(demo)
@@ -70,5 +76,5 @@ def createSession(api_key,password,identifier, demo = True):
         data = res.read()
         security_token = res.headers["X-SECURITY-TOKEN"]
         cst = res.headers["CST"]
-        return data, security_token, cst
+        return data, res.headers, security_token, cst
     raise ValueError
