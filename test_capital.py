@@ -52,7 +52,7 @@ def test__Download():
 
         data, headers, security,cst = capital.create_session(api_key,password,identifier, demo=True)
 
-        df = capital.Download("AAPL", security,cst, "MINUTE",10)
+        df = capital.download("AAPL", security,cst, "MINUTE",10)
 
         assert df.empty == False
         assert df.index.size == 10
