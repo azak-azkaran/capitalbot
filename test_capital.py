@@ -9,7 +9,7 @@ def test__GetConnection():
     assert conn.host == capital.CAPITAL_BACKEND_DEMO
 
 def test__serverTime():
-    res = capital.serverTime(True)
+    res = capital.server_time(True)
     assert res != None
     assert res.getcode() == 200
     data = res.read()
@@ -30,7 +30,7 @@ def test__createSession():
         assert password != None
         assert identifier != None
 
-        data, headers, security,cst = capital.createSession(api_key,password,identifier, demo=True)
+        data, headers, security,cst = capital.create_session(api_key,password,identifier, demo=True)
 
         assert data != None
         assert headers != None
@@ -50,7 +50,7 @@ def test__Download():
         assert password != None
         assert identifier != None
 
-        data, headers, security,cst = capital.createSession(api_key,password,identifier, demo=True)
+        data, headers, security,cst = capital.create_session(api_key,password,identifier, demo=True)
 
         df = capital.Download("AAPL", security,cst, "MINUTE",10)
 

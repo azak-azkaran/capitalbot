@@ -1,5 +1,6 @@
 __pycache__
 .vscode
 .pytest_cache
+.coverage
 config.yaml
 config.yml

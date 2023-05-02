@@ -12,7 +12,7 @@ def _getConnection(demo = True):
     else:
         return http.client.HTTPSConnection(CAPITAL_BACKEND)
 
-def capitalPing(security_token, cst_token, demo = True):
+def capital_ping(security_token, cst_token, demo = True):
     conn = _getConnection(demo)
     payload = ''
     headers = {
@@ -24,7 +24,7 @@ def capitalPing(security_token, cst_token, demo = True):
     data = res.read()
     print(data.decode("utf-8"))
 
-def serverTime(demo = True):
+def server_time(demo = True):
     conn = _getConnection(demo)
     payload = ''
     headers = {}
@@ -32,7 +32,7 @@ def serverTime(demo = True):
     res = conn.getresponse()
     return res
 
-def Download(symbol, security_token, cst_token, period, interval, demo = True):
+def download(symbol, security_token, cst_token, period, interval, demo = True):
     conn = _getConnection(demo)
     payload = ''
     headers = {
@@ -48,7 +48,7 @@ def Download(symbol, security_token, cst_token, period, interval, demo = True):
     df = pd.DataFrame.from_dict(pd.json_normalize( jdata["prices"] ))
     return df
 
-def GetEncryptionKey(security_token, demo = True):
+def get_encryption_key(security_token, demo = True):
     conn = _getConnection(demo)
     payload = ''
     headers = {
@@ -60,7 +60,7 @@ def GetEncryptionKey(security_token, demo = True):
     return data
 
 
-def createSession(api_key,password,identifier, demo = True):
+def create_session(api_key,password,identifier, demo = True):
     conn = _getConnection(demo)
     payload = json.dumps({
       "identifier": identifier,
