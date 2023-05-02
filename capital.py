@@ -6,14 +6,14 @@ import pandas as pd
 CAPITAL_BACKEND = "api-capital.backend-capital.com"
 CAPITAL_BACKEND_DEMO = "demo-api-capital.backend-capital.com"
 
-def _getConnection(demo = True):
+def _get_connection(demo = True):
     if demo:
         return http.client.HTTPSConnection(CAPITAL_BACKEND_DEMO)
     else:
         return http.client.HTTPSConnection(CAPITAL_BACKEND)
 
 def capital_ping(security_token, cst_token, demo = True):
-    conn = _getConnection(demo)
+    conn = _get_connection(demo)
     payload = ''
     headers = {
       'X-SECURITY-TOKEN': security_token,
@@ -25,7 +25,7 @@ def capital_ping(security_token, cst_token, demo = True):
     print(data.decode("utf-8"))
 
 def server_time(demo = True):
-    conn = _getConnection(demo)
+    conn = _get_connection(demo)
     payload = ''
     headers = {}
     conn.request("GET", "/api/v1/time", payload, headers)
@@ -33,7 +33,7 @@ def server_time(demo = True):
     return res
 
 def download(symbol, security_token, cst_token, period, interval, demo = True):
-    conn = _getConnection(demo)
+    conn = _get_connection(demo)
     payload = ''
     headers = {
       'X-SECURITY-TOKEN': security_token,
@@ -49,7 +49,7 @@ def download(symbol, security_token, cst_token, period, interval, demo = True):
     return df
 
 def get_encryption_key(security_token, demo = True):
-    conn = _getConnection(demo)
+    conn = _get_connection(demo)
     payload = ''
     headers = {
       'X-CAP-API-KEY': security_token
@@ -61,7 +61,7 @@ def get_encryption_key(security_token, demo = True):
 
 
 def create_session(api_key,password,identifier, demo = True):
-    conn = _getConnection(demo)
+    conn = _get_connection(demo)
     payload = json.dumps({
       "identifier": identifier,
       "password": password

@@ -3,12 +3,12 @@ import capital
 import yaml
 
 
-def test__GetConnection():
-    conn = capital._getConnection(True)
+def test__set_connection():
+    conn = capital._get_connection(True)
     assert conn != None
     assert conn.host == capital.CAPITAL_BACKEND_DEMO
 
-def test__serverTime():
+def test__server_time():
     res = capital.server_time(True)
     assert res != None
     assert res.getcode() == 200
@@ -17,7 +17,7 @@ def test__serverTime():
     res.close()
     assert res.closed == True
 
-def test__createSession():
+def test__create_session():
     with open('config.yaml', 'r') as file:
         conf = yaml.safe_load(file)
         assert conf != None
@@ -37,7 +37,7 @@ def test__createSession():
         assert security != None
         assert cst != None
 
-def test__Download():
+def test__download():
     with open('config.yaml', 'r') as file:
         conf = yaml.safe_load(file)
         assert conf != None

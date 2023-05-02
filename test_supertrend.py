@@ -4,7 +4,7 @@ from supertrend import supertrend
 from datetime import datetime
 
 
-def test_Supertrend():
+def test_supertrend():
     df = yf.download("AAPL", period="1d",interval="1h")
     assert df.empty == False
     print(df)
