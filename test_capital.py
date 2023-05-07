@@ -52,7 +52,7 @@ def test__download():
 
         data, headers, security,cst = capital.create_session(api_key,password,identifier, demo=True)
 
-        df = capital.download("AAPL", security,cst, "MINUTE",10)
+        df = capital.download("AAPL", security,cst, "DAY",start_date='2023-01-01T01:01:00', end_date='2023-05-01T01:01:00', save_to_file=True)
 
         assert df.empty == False
-        assert df.index.size == 10
+        assert df.index.size >= 10
