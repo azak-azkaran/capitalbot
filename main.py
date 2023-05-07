@@ -33,19 +33,23 @@ def parse_args(filename):
             raise ValueError("atr.multiplier must be specified")
     return args
 
-def download(symbol, interval , period="max", save_to_file=False, start_date=None, end_date=None):
+def download(symbol, interval , period="max", start_date=None, end_date=None):
     df = yf.download(tickers=symbol, period=period, interval=interval, start=start_date, end=end_date)
-    if save_to_file:
-        path = os.path.join("./"+ symbol+".json")
-        df.to_json(path_or_buf=path)
     return df
 
+def save(symbol, df, json=False):
+    if json:
+        path = os.path.join("./"+ symbol+".json")
+        df.to_json(path_or_buf=path)
+    else:
+        path = os.path.join("./"+ symbol+".csv")
+        df.to_csv(path_or_buf=path)
 
-def main(args):
+def main(argv):
     """
     main
     """
-    args = parse_args()
+    args = parse_args(argv[1])
     df = download(args.symbol, "5d", "1m")
     supertrend_frame = supertrend(df, args.period, args.multiplier)
     df = df.join(supertrend_frame)
