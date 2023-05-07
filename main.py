@@ -49,9 +49,9 @@ def main(argv):
     """
     main
     """
-    args = parse_args(argv[1])
+    args = parse_args(argv[0])
     df = download(args.symbol, "5d", "1m")
-    supertrend_frame = supertrend(df, args.period, args.multiplier)
+    supertrend_frame = supertrend(df, args.atr_period, args.atr_multiplier)
     df = df.join(supertrend_frame)
 
     plt.plot(df['Close'], label='Close Price')

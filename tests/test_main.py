@@ -26,6 +26,9 @@ def test_download():
     assert df.empty == False
     assert df.columns.size == 6
 
+def test_main():
+   main.main(["./tests/test_config.yaml"]) 
+   assert os.path.isfile("./foo.png")
  
 def test_save():
    df = main.download(TEST_SYMBOL, "1d", start_date='2023-01-01', end_date='2023-05-01')
