@@ -19,6 +19,9 @@ def test__server_time():
     assert res.closed == True
 
 def test__create_session():
+    if not os.path.exists('config.yaml'):
+        print("No config file Probably Runner")
+        return;
     with open('config.yaml', 'r') as file:
         conf = yaml.safe_load(file)
         assert conf != None
@@ -39,6 +42,9 @@ def test__create_session():
         assert cst != None
 
 def test__download():
+    if not os.path.exists('config.yaml'):
+        print("No config file Probably Runner")
+        return;
     with open('config.yaml', 'r') as file:
         conf = yaml.safe_load(file)
         assert conf != None
