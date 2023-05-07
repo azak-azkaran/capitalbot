@@ -13,7 +13,7 @@ TEST_JSON_PATH ="./" + TEST_SYMBOL + ".json"
 TEST_CSV_PATH = "./" + TEST_SYMBOL + ".csv"
 
 def test_parse_args():
-    args = main.parse_args("test_config.yaml")
+    args = main.parse_args("./tests/test_config.yaml")
     assert args != None
     assert args.symbol == "AAPL"
     assert args.atr_period != None
