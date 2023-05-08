@@ -63,7 +63,3 @@ def test__download():
 
         assert df.empty == False
         assert df.index.size >= 10
-
-        #path = os.path.join("./capital_AAPL.csv")
-        #df.to_csv(path_or_buf=path)
-        #assert os.path.isfile("./capital_AAPL.csv")

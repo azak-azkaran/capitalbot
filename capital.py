@@ -46,6 +46,7 @@ def download(symbol, security_token, cst_token, period, interval="1000", demo = 
     if end_date != None:
         url += "&to=" + end_date
 
+    print(url)
     conn.request("GET", url, payload, headers)
     res = conn.getresponse()
     data = res.read()
@@ -56,7 +57,6 @@ def download(symbol, security_token, cst_token, period, interval="1000", demo = 
 
       df.index = df["snapshotTimeUTC"]
       df = df.drop(columns=["snapshotTimeUTC", "snapshotTime"])
-      print(df)
 
       if save_to_file:
           path = os.path.join("./capital_"+ symbol+".json")

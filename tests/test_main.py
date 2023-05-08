@@ -57,6 +57,8 @@ def test_save():
    os.remove(TEST_JSON_PATH)
    assert os.path.isfile(TEST_JSON_PATH) == False
 
-   #path = os.path.join(TEST_CSV_PATH)
-   #df.to_csv(path_or_buf=path)
-
+def test_capitalize():
+    args = main.parse_args("./config.yaml")
+    df = main.capitalize(args)
+    main.plot_frame(df , "test.png")
+    assert os.path.isfile("./test.png")
