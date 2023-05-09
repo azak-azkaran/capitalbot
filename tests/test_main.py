@@ -67,9 +67,15 @@ def test_save():
 def test_capitalize():
     if not os.path.exists("config.yaml"):
         print("No config file Probably Runner")
-        return
+        args = main.parse_args("./tests/tests_config.yaml")
+        args.capital_api_key = os.environ.get("CAPITAL_API_TOKEN")
+        args.capital_identifier = os.environ.get("CAPITAL_IDENTIFIER")
+        args.capital_password = os.environ.get("CAPITAL_PASSWORD")
+    else:
+        args = main.parse_args("./config.yaml")
 
-    args = main.parse_args("./config.yaml")
+    assert args.capital_api_key != None
+    assert args.capital_api_key != ""
     df = main.capitalize(args)
     main.plot_frame(df, "test.png")
     assert os.path.isfile("./test.png")
