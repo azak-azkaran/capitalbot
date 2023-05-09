@@ -58,6 +58,10 @@ def test_save():
    assert os.path.isfile(TEST_JSON_PATH) == False
 
 def test_capitalize():
+    if not os.path.exists('config.yaml'):
+        print("No config file Probably Runner")
+        return
+
     args = main.parse_args("./config.yaml")
     df = main.capitalize(args)
     main.plot_frame(df , "test.png")
