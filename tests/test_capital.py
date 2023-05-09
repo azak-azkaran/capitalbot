@@ -26,9 +26,11 @@ def setup():
     identifier = None
     if not os.path.exists("config.yaml"):
         print("No config file Probably Runner")
+        assert os.environ.get("CAPITAL_API_TOKEN") != None
         api_key = os.environ.get("CAPITAL_API_TOKEN")
         password = os.environ.get("CAPITAL_PASSWORD")
         identifier = os.environ.get("CAPITAL_IDENTIFIER")
+        return api_key, password, identifier
 
     else:
         with open("config.yaml", "r") as file:
@@ -39,7 +41,7 @@ def setup():
             api_key = conf["capital"]["api_key"]
             password = conf["capital"]["password"]
             identifier = conf["capital"]["identifier"]
-    return api_key, password, identifier
+            return api_key, password, identifier
 
 
 def test__create_session():
