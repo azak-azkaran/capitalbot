@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 def test_supertrend():
-    df = yf.download("AAPL", period="1d",interval="1h")
+    df = yf.download("AAPL", period="1d", interval="1h")
     assert df.empty == False
     print(df)
     st = supertrend(df, 5, 10)
