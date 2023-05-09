@@ -54,6 +54,10 @@ jobs:
         run: pip install tox
       - name: Run tox
         run: tox
+        env:
+          CAPITAL_API_TOKEN: ${{ secrets.CAPITAL_API_TOKEN }}
+          CAPITAL_PASSWORD: ${{ secrets.CAPITAL_PASSWORD }}
+          CAPITAL_IDENTIFIER: ${{ secrets.CAPITAL_IDENTIFIER }}
       - name: Analyze with SonarCloud
         # You can pin the exact commit or the version.
         # uses: SonarSource/sonarcloud-github-action@de2e56b42aa84d0b1c5b622644ac17e505c9a049

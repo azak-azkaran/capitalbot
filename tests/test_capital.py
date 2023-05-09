@@ -28,7 +28,7 @@ def setup():
         print("No config file Probably Runner")
         api_key = os.environ.get("CAPITAL_API_TOKEN")
         password = os.environ.get("CAPITAL_PASSWORD")
-        identifier = os.environ.get("CAPITAL_PASSWORD")
+        identifier = os.environ.get("CAPITAL_IDENTIFIER")
 
     else:
         with open("config.yaml", "r") as file:
