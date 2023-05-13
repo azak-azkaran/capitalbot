@@ -92,27 +92,28 @@ def test__download():
 
 def test__ping():
     security, cst = setup_session()
-    data = capital.ping(security, cst)
-    assert data != None
-    assert data.read() != None
+    res = capital.ping(security, cst)
+    assert res != None
+
+    data = res.read()
     assert data.getcode() == 200
 
 def test__get_positions():
     security, cst = setup_session()
-    data = capital.get_positions(security, cst)
-    assert data != None
-    assert data.read() != None
-    assert data.getcode() == 200
+    res = capital.get_positions(security, cst)
+    assert res != None
 
-    data = data.read()
+    data = res.read()
+    assert data != None
+    assert data.getcode() == 200
     assert data.decode("utf-8") != ""
 
 def test__log_out():
     security, cst = setup_session()
-    data = capital.log_out(security, cst)
-    assert data != None
-    assert data.read() != None
-    assert data.getcode() == 200
+    res = capital.log_out(security, cst)
+    assert res != None
 
-    data = data.read()
+    data = res.read()
+    assert data != None
+    assert data.getcode() == 200
     assert data.decode("utf-8") != ""
