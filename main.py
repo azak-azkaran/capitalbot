@@ -12,7 +12,6 @@ import pandas as pd
 from datetime import datetime, timezone, timedelta
 
 
-
 class Config:
     symbol = ""
     atr_period = 0
@@ -103,7 +102,9 @@ def capitalize(config):
     )
 
     date = datetime.now().replace(second=0)
-    start_date = (date - timedelta(days=3, hours=2)).strftime(capital.CAPITAL_STRING_FORMAT)
+    start_date = (date - timedelta(days=3, hours=2)).strftime(
+        capital.CAPITAL_STRING_FORMAT
+    )
     end_date = (date - timedelta(hours=2)).strftime(capital.CAPITAL_STRING_FORMAT)
 
     df = capital.download(

@@ -22,8 +22,7 @@ def ping(security_token, cst_token, demo=True):
     headers = {"X-SECURITY-TOKEN": security_token, "CST": cst_token}
     conn.request("GET", "/api/v1/ping", payload, headers)
     res = conn.getresponse()
-    data = res.read()
-    return data
+    return res
 
 
 def server_time(demo=True):
@@ -44,7 +43,6 @@ def download(
     demo=True,
     start_date=None,
     end_date=None,
-    save_to_file=False,
 ):
     conn = _get_connection(demo)
     payload = ""
@@ -62,9 +60,15 @@ def download(
     if end_date != None:
         url += "&to=" + end_date
 
-    print(url)
     conn.request("GET", url, payload, headers)
     res = conn.getresponse()
+    return res
+
+
+def convert_download(
+    res,
+    save_to_file=False,
+):
     data = res.read()
 
     if res.getcode() == 200:
@@ -109,3 +113,14 @@ def create_session(api_key, password, identifier, demo=True):
         cst = res.headers["CST"]
         return data, res.headers, security_token, cst
     raise ValueError
+
+
+def log_out(security_token, cst, demo=True):
+    conn = _get_connection(demo)
+    payload = ""
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
+    conn.request("DELETE", "/api/v1/session", payload, headers)
+    res = conn.getresponse()
+    return res
+    data = res.read()
+    print(data.decode("utf-8"))

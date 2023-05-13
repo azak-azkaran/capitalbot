@@ -43,6 +43,7 @@ def setup():
             identifier = conf["capital"]["identifier"]
             return api_key, password, identifier
 
+
 def setup_session():
     api_key, password, identifier = setup()
     assert api_key != None
@@ -52,6 +53,7 @@ def setup_session():
         api_key, password, identifier, demo=True
     )
     return security, cst
+
 
 def test__create_session():
     api_key, password, identifier = setup()
@@ -72,7 +74,7 @@ def test__create_session():
 def test__download():
     security, cst = setup_session()
 
-    df = capital.download(
+    res = capital.download(
         "AAPL",
         security,
         cst,
@@ -81,15 +83,16 @@ def test__download():
         end_date="2023-05-01T01:01:00",
     )
 
+    assert res != None
+    df = capital.convert_download(res)
+
     assert df.empty == False
     assert df.index.size >= 10
 
+
 def test__ping():
     security, cst = setup_session()
-    data = capital.ping(security,cst)
+    data = capital.ping(security, cst)
     assert data != None
     assert data.read() != None
     assert data.getcode() == 200
-    data.close()
-
-
