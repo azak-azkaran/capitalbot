@@ -137,8 +137,7 @@ def get_positions(security_token, cst, demo=True):
     }
     conn.request("GET", "/api/v1/positions", payload, headers)
     res = conn.getresponse()
-    data = res.read()
-    print(data.decode("utf-8"))
+    return res
 
 def get_orders(security_token, cst, demo=True):
     conn = _get_connection(demo)
