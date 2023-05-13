@@ -107,7 +107,7 @@ def capitalize(config):
     )
     end_date = (date - timedelta(hours=2)).strftime(capital.CAPITAL_STRING_FORMAT)
 
-    df = capital.download(
+    res = capital.download(
         config.symbol,
         security,
         cst,
@@ -115,6 +115,12 @@ def capitalize(config):
         start_date=start_date,
         end_date=end_date,
     )
+    if res.getcode() != 200:
+        data = res.read()
+        raise ValueError(data.decode("utf-8"))
+
+    df = capital.convert_download(res)
+
     if df is None:
         raise ValueError("No download")
 
