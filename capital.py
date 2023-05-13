@@ -16,14 +16,14 @@ def _get_connection(demo=True):
         return http.client.HTTPSConnection(CAPITAL_BACKEND)
 
 
-def capital_ping(security_token, cst_token, demo=True):
+def ping(security_token, cst_token, demo=True):
     conn = _get_connection(demo)
     payload = ""
     headers = {"X-SECURITY-TOKEN": security_token, "CST": cst_token}
     conn.request("GET", "/api/v1/ping", payload, headers)
     res = conn.getresponse()
     data = res.read()
-    print(data.decode("utf-8"))
+    return data
 
 
 def server_time(demo=True):
