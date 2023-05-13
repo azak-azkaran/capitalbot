@@ -6,6 +6,7 @@ import os
 
 CAPITAL_BACKEND = "api-capital.backend-capital.com"
 CAPITAL_BACKEND_DEMO = "demo-api-capital.backend-capital.com"
+CAPITAL_STRING_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 
 def _get_connection(demo=True):

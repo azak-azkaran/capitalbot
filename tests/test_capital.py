@@ -65,7 +65,7 @@ def test__download():
     assert api_key != None
     assert password != None
     assert identifier != None
-    data, headers, security, cst = capital.create_session(
+    _, _, security, cst = capital.create_session(
         api_key, password, identifier, demo=True
     )
 

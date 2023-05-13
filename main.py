@@ -12,6 +12,7 @@ import pandas as pd
 from datetime import datetime, timezone, timedelta
 
 
+
 class Config:
     symbol = ""
     atr_period = 0
@@ -94,7 +95,7 @@ def capitalize(config):
     ):
         raise ValueError("Please provide capital_api_key and capital_password")
 
-    data, headers, security, cst = capital.create_session(
+    _, _, security, cst = capital.create_session(
         config.capital_api_key,
         config.capital_password,
         config.capital_identifier,
@@ -102,8 +103,8 @@ def capitalize(config):
     )
 
     date = datetime.now().replace(second=0)
-    start_date = (date - timedelta(days=3, hours=2)).strftime("%Y-%m-%dT%H:%M:%S")
-    end_date = (date - timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%S")
+    start_date = (date - timedelta(days=3, hours=2)).strftime(capital.CAPITAL_STRING_FORMAT)
+    end_date = (date - timedelta(hours=2)).strftime(capital.CAPITAL_STRING_FORMAT)
 
     df = capital.download(
         config.symbol,

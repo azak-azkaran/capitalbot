@@ -11,10 +11,11 @@ import os
 TEST_SYMBOL = "AAPL"
 TEST_JSON_PATH = "./" + TEST_SYMBOL + ".json"
 TEST_CSV_PATH = "./" + TEST_SYMBOL + ".csv"
+TEST_CONFIG_PATH = "./tests/test_config.yaml"
 
 
 def test_parse_args():
-    args = main.parse_args("./tests/test_config.yaml")
+    args = main.parse_args(TEST_CONFIG_PATH)
     assert args != None
     assert args.symbol == "AAPL"
     assert args.atr_period != None
@@ -30,7 +31,7 @@ def test_download():
 
 
 def test_main():
-    main.main(["./tests/test_config.yaml"])
+    main.main([TEST_CONFIG_PATH])
     assert os.path.isfile("./foo.png")
 
 
@@ -67,7 +68,7 @@ def test_save():
 def test_capitalize():
     if not os.path.exists("config.yaml"):
         print("No config file Probably Runner")
-        args = main.parse_args("./tests/test_config.yaml")
+        args = main.parse_args(TEST_CONFIG_PATH)
         args.capital_api_key = os.environ.get("CAPITAL_API_TOKEN")
         args.capital_identifier = os.environ.get("CAPITAL_IDENTIFIER")
         args.capital_password = os.environ.get("CAPITAL_PASSWORD")
