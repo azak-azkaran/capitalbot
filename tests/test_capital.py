@@ -98,6 +98,7 @@ def test__ping():
     data = res.read()
     assert data.getcode() == 200
 
+
 def test__get_positions():
     security, cst = setup_session()
     res = capital.get_positions(security, cst)
@@ -107,6 +108,7 @@ def test__get_positions():
     assert data != None
     assert data.getcode() == 200
     assert data.decode("utf-8") != ""
+
 
 def test__log_out():
     security, cst = setup_session()

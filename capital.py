@@ -46,10 +46,7 @@ def download(
 ):
     conn = _get_connection(demo)
     payload = ""
-    headers = {
-        "X-SECURITY-TOKEN": security_token, 
-        "CST": cst_token
-        }
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst_token}
     url = (
         "/api/v1/prices/"
         + symbol
@@ -117,53 +114,44 @@ def create_session(api_key, password, identifier, demo=True):
         return data, res.headers, security_token, cst
     raise ValueError
 
+
 def log_out(security_token, cst, demo=True):
     conn = _get_connection(demo)
-    payload = ''
-    headers = {
-      'X-SECURITY-TOKEN': security_token,
-      'CST': cst
-    }
+    payload = ""
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
     conn.request("DELETE", "/api/v1/session", payload, headers)
     res = conn.getresponse()
     return res
 
+
 def get_positions(security_token, cst, demo=True):
     conn = _get_connection(demo)
-    payload = ''
-    headers = {
-      'X-SECURITY-TOKEN': security_token,
-      'CST': cst
-    }
+    payload = ""
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
     conn.request("GET", "/api/v1/positions", payload, headers)
     res = conn.getresponse()
     return res
 
+
 def get_orders(security_token, cst, demo=True):
     conn = _get_connection(demo)
-    payload = ''
-    headers = {
-      'X-SECURITY-TOKEN': security_token,
-      'CST': cst
-    }
+    payload = ""
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
     conn.request("GET", "/api/v1/workingorders", payload, headers)
     res = conn.getresponse()
     data = res.read()
     print(data.decode("utf-8"))
 
+
 def set_order(security_token, cst, demo=True):
     conn = _get_connection(demo)
-    payload = json.dumps({
-      "epic": "SILVER",
-      "direction": "BUY",
-      "size": 1,
-      "level": 20,
-      "type": "LIMIT"
-    })
+    payload = json.dumps(
+        {"epic": "SILVER", "direction": "BUY", "size": 1, "level": 20, "type": "LIMIT"}
+    )
     headers = {
-      'X-SECURITY-TOKEN': security_token,
-      'CST': cst,
-      'Content-Type': 'application/json'
+        "X-SECURITY-TOKEN": security_token,
+        "CST": cst,
+        "Content-Type": "application/json",
     }
     conn.request("POST", "/api/v1/workingorders", payload, headers)
     res = conn.getresponse()
