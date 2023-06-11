@@ -66,3 +66,73 @@ def supertrend(df, atr_period, multiplier):
         },
         index=df.index,
     )
+
+
+def backtest_supertrend(df, investment, debug=False, commission=5):
+    is_uptrend = df["Supertrend"]
+    close = df["Close"]
+
+    # initial condition
+    in_position = False
+    equity = investment
+    share = 0
+    entry = []
+    exit = []
+
+    for i in range(2, len(df)):
+        # if not in position & price is on uptrend -> buy
+        if not in_position and is_uptrend[i]:
+            share = math.floor(equity / close[i])
+            # if debug: print(f'EQUITY: {equity} close price: {close[i]}')
+            equity -= share * close[i]
+            entry.append((i, close[i]))
+            in_position = True
+            if debug:
+                print(
+                    f'Buy {share} shares at {round(close[i],2)} on {df.index[i].strftime("%Y/%m/%d")}'
+                )
+        # if in position & price is not on uptrend -> sell
+        elif in_position and not is_uptrend[i]:
+            equity += share * close[i] - commission
+            # if debug: print(f'EQUITY: {equity} close price: {close[i]}')
+            exit.append((i, close[i]))
+            in_position = False
+            if debug:
+                print(
+                    f'Sell at {round(close[i],2)} on {df.index[i].strftime("%Y/%m/%d")}'
+                )
+    # if still in position -> sell all share
+    if in_position:
+        equity += share * close[i] - commission
+
+    earning = equity - investment
+    roi = round(earning / investment * 100, 2)
+    if debug:
+        print(
+            f"Earning from investing ${investment} is ${round(earning,2)} (ROI = {roi}%)"
+        )
+    return entry, exit, roi
+
+
+# BONUS: parameter optimization
+def find_optimal_parameter(
+    df,
+    investment=10000,
+    atr_period=[7, 8, 9, 10],
+    atr_multiplier=[1.0, 1.5, 2.0, 2.5, 3.0],
+):
+    roi_list = []
+
+    # for each period and multiplier, perform backtest
+    for period, multiplier in [(x, y) for x in atr_period for y in atr_multiplier]:
+        new_df = df
+        st = supertrend(df, period, multiplier)
+        new_df = df.join(st)
+        new_df = new_df[period:]
+        entry, exit, roi = backtest_supertrend(new_df, investment)
+        roi_list.append((period, multiplier, roi))
+
+    print(pd.DataFrame(roi_list, columns=["ATR_period", "Multiplier", "ROI"]))
+
+    # return the best parameter set
+    return max(roi_list, key=lambda x: x[2])

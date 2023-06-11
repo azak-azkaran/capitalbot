@@ -74,7 +74,7 @@ def test__create_session():
 def test__download():
     security, cst = setup_session()
 
-    res = capital.download(
+    data = capital.download(
         "AAPL",
         security,
         cst,
@@ -83,11 +83,28 @@ def test__download():
         end_date="2023-05-01T01:01:00",
     )
 
-    assert res != None
-    df = capital.convert_download(res)
+    assert data != None
+    df, changed = capital.convert_download(data)
 
     assert df.empty == False
     assert df.index.size >= 10
+
+    assert changed.empty == False
+    assert df.columns.size == 9
+    assert changed["Open"].empty == False
+
+    try:
+        data = capital.download(
+            "AAPL",
+            security,
+            cst,
+            "DAY",
+            start_date="2020-01-01T01:01:00",
+            end_date="2023-05-01T01:01:00",
+        )
+        assert False
+    except ValueError:
+        assert True
 
 
 def test__ping():

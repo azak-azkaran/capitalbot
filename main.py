@@ -1,6 +1,6 @@
 import argparse
-from supertrend import supertrend
 import yfinance as yf
+from supertrend import supertrend
 import matplotlib.pyplot as plt
 import yaml
 import sys
@@ -49,13 +49,6 @@ def parse_args(filename):
     return args
 
 
-def download(symbol, interval, period="max", start_date=None, end_date=None):
-    df = yf.download(
-        tickers=symbol, period=period, interval=interval, start=start_date, end=end_date
-    )
-    return df
-
-
 def save(symbol, df, json=False):
     if json:
         path = os.path.join("./" + symbol + ".json")
@@ -63,6 +56,13 @@ def save(symbol, df, json=False):
     else:
         path = os.path.join("./" + symbol + ".csv")
         df.to_csv(path_or_buf=path)
+
+
+def download(symbol, interval, period="max", start_date=None, end_date=None):
+    df = yf.download(
+        tickers=symbol, period=period, interval=interval, start=start_date, end=end_date
+    )
+    return df
 
 
 def main(argv):
@@ -79,10 +79,34 @@ def main(argv):
     plot_frame(df, "foo.png")
 
 
-def plot_frame(df, filename):
+def plot_frame(df, filename, entry=None, exit=None):
+    plt.figure(figsize=(16, 9), dpi=360)
     plt.plot(df["Close"], label="Close Price")
     plt.plot(df["Final Lowerband"], "g", label="Final Lowerband")
     plt.plot(df["Final Upperband"], "r", label="Final Upperband")
+    if entry != None:
+        for e in entry:
+            plt.plot(
+                df.index[e[0]],
+                e[1],
+                marker="^",
+                color="green",
+                markersize=12,
+                linewidth=0,
+                label="Entry",
+            )
+
+    if exit != None:
+        for e in exit:
+            plt.plot(
+                df.index[e[0]],
+                e[1],
+                marker="v",
+                color="red",
+                markersize=12,
+                linewidth=0,
+                label="Exit",
+            )
     plt.savefig(filename)
 
 
@@ -115,34 +139,9 @@ def capitalize(config):
         start_date=start_date,
         end_date=end_date,
     )
-    if res.getcode() != 200:
-        data = res.read()
-        raise ValueError(data.decode("utf-8"))
 
-    df = capital.convert_download(res)
+    df, changed = capital.convert_download(res)
 
-    if df is None:
-        raise ValueError("No download")
-
-    changed = df.loc[
-        :,
-        [
-            "openPrice.ask",
-            "highPrice.ask",
-            "lowPrice.ask",
-            "closePrice.ask",
-            "lastTradedVolume",
-        ],
-    ]
-    changed = changed.rename(
-        columns={
-            "openPrice.ask": "Open",
-            "highPrice.ask": "High",
-            "lowPrice.ask": "Low",
-            "closePrice.ask": "Close",
-            "lastTradedVolume": "Volume",
-        }
-    )
     sf = supertrend(changed, config.atr_period, config.atr_multiplier)
     df = changed.join(sf)
     df.index = pd.to_datetime(df.index, format="%Y-%m-%dT%H:%M:%S")
