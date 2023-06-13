@@ -21,15 +21,16 @@ def test_supertrend():
 
 
 def test_backtest_supertrend():
-    if os.path.exists("./foo.png"):
-        os.remove("./foo.png")
+    foo_filename = "./foo.png"
+    if os.path.exists(foo_filename):
+        os.remove(foo_filename)
 
     atr_period = 7
     atr_multiplier = 3
 
     stock_list = ["AAPL"]
     for symbol in stock_list:
-        df = yf.download("AAPL", start="2023-06-05", end="2023-06-10", interval="5m")
+        df = yf.download(symbol, start="2023-06-05", end="2023-06-10", interval="5m")
         st = supertrend(df, atr_period, atr_multiplier)
         df = df.join(st)
 
@@ -38,8 +39,8 @@ def test_backtest_supertrend():
     assert len(entry) != 0
     assert len(exit) != 0
 
-    plot_frame(df, "./foo.png", entry, exit)
-    assert os.path.exists("./foo.png")
+    plot_frame(df, foo_filename, entry, exit)
+    assert os.path.exists(foo_filename)
 
 
 def test_find_optimal_parameter():

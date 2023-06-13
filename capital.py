@@ -1,7 +1,7 @@
 import http.client
 import json
-import pandas as pd
 import os
+import pandas as pd
 
 
 CAPITAL_BACKEND = "api-capital.backend-capital.com"
@@ -23,7 +23,7 @@ def _create_connection(security_token, cst_token, demo=True):
 
 
 def ping(security_token, cst_token, demo=True):
-    conn, headers = _create_connection(security_token, cst_token)
+    conn, headers = _create_connection(security_token, cst_token, demo)
     payload = ""
     conn.request("GET", "/api/v1/ping", payload, headers)
     res = conn.getresponse()
@@ -144,7 +144,12 @@ def get_positions(security_token, cst, demo=True):
     payload = ""
     conn.request("GET", "/api/v1/positions", payload, headers)
     res = conn.getresponse()
-    return res
+    data = res.read()
+    jdata = json.loads(data.decode("utf-8"))
+
+    df = pd.DataFrame.from_dict(pd.json_normalize(jdata))
+
+    return df
 
 
 def set_positions(security_token, cst, demo=True):

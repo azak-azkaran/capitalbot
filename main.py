@@ -23,6 +23,9 @@ class Config:
     capital_api_key = ""
     capital_password = ""
     capital_identifier = ""
+    capital_security_token = ""
+    capital_cst_token = ""
+    demo = True
 
 
 def parse_args(filename):
@@ -147,6 +150,10 @@ def capitalize(config):
     df.index = pd.to_datetime(df.index, format="%Y-%m-%dT%H:%M:%S")
 
     return df
+
+
+def trade(config, df):
+    pos = capital.get_positions(config.security_token, config.cst_token)
 
 
 if __name__ == "__main__":

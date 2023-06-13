@@ -120,13 +120,10 @@ def test__ping():
 
 def test__get_positions():
     security, cst = setup_session()
-    res = capital.get_positions(security, cst)
-    assert res != None
-    assert res.getcode() == 200
-
-    data = res.read()
-    assert data != None
-    assert data.decode("utf-8") != ""
+    df = capital.get_positions(security, cst)
+    assert df.empty == False
+    assert df.index.size == 1
+    assert df.columns.size == 1
 
 
 def test__log_out():

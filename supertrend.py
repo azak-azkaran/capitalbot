@@ -129,7 +129,7 @@ def find_optimal_parameter(
         st = supertrend(df, period, multiplier)
         new_df = df.join(st)
         new_df = new_df[period:]
-        entry, exit, roi = backtest_supertrend(new_df, investment)
+        _, _, roi = backtest_supertrend(new_df, investment)
         roi_list.append((period, multiplier, roi))
 
     print(pd.DataFrame(roi_list, columns=["ATR_period", "Multiplier", "ROI"]))
