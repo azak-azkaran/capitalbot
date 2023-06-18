@@ -2,6 +2,7 @@ import http.client
 import json
 import os
 import pandas as pd
+import requests
 
 
 CAPITAL_BACKEND = "api-capital.backend-capital.com"
@@ -9,33 +10,21 @@ CAPITAL_BACKEND_DEMO = "demo-api-capital.backend-capital.com"
 CAPITAL_STRING_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 
-def _get_connection(demo=True):
+def _get_url(demo=True):
     if demo:
-        return http.client.HTTPSConnection(CAPITAL_BACKEND_DEMO)
+        return "https://" + CAPITAL_BACKEND_DEMO
     else:
-        return http.client.HTTPSConnection(CAPITAL_BACKEND)
-
-
-def _create_connection(security_token, cst_token, demo=True):
-    conn = _get_connection(demo)
-    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst_token}
-    return conn, headers
+        return "https://" + CAPITAL_BACKEND
 
 
 def ping(security_token, cst_token, demo=True):
-    conn, headers = _create_connection(security_token, cst_token, demo)
-    payload = ""
-    conn.request("GET", "/api/v1/ping", payload, headers)
-    res = conn.getresponse()
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst_token}
+    res = requests.get(_get_url(demo) + "/api/v1/ping", headers=headers)
     return res
 
 
 def server_time(demo=True):
-    conn = _get_connection(demo)
-    payload = ""
-    headers = {}
-    conn.request("GET", "/api/v1/time", payload, headers)
-    res = conn.getresponse()
+    res = requests.get(_get_url(demo) + "/api/v1/time")
     return res
 
 
@@ -49,7 +38,7 @@ def download(
     start_date=None,
     end_date=None,
 ):
-    conn, headers = _create_connection(security_token, cst_token, demo)
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst_token}
     payload = ""
     url = (
         "/api/v1/prices/"
@@ -64,24 +53,18 @@ def download(
     if end_date != None:
         url += "&to=" + end_date
 
-    conn.request("GET", url, payload, headers)
-    res = conn.getresponse()
-
-    if res.getcode() != 200:
-        data = res.read()
-        raise ValueError(data.decode("utf-8"))
-
-    data = res.read()
-    res.close()
+    res = requests.get(_get_url(demo) + url, payload, headers=headers)
+    data = res.json()
+    if res.status_code != 200:
+        raise ValueError(str(data))
     return data
 
 
 def convert_download(
-    data,
+    jdata,
     save_to_file=False,
     symbol=None,
 ):
-    jdata = json.loads(data.decode("utf-8"))
     df = pd.DataFrame.from_dict(pd.json_normalize(jdata["prices"]))
 
     df.index = df["snapshotTimeUTC"]
@@ -117,35 +100,29 @@ def convert_download(
 
 
 def create_session(api_key, password, identifier, demo=True):
-    conn = _get_connection(demo)
     payload = json.dumps({"identifier": identifier, "password": password})
     headers = {"X-CAP-API-KEY": api_key, "Content-Type": "application/json"}
 
-    conn.request("POST", "/api/v1/session", payload, headers)
-    res = conn.getresponse()
-    data = res.read()
-    if res.getcode() == 200:
+    res = requests.post(_get_url(demo) + "/api/v1/session", payload, headers=headers)
+    data = res.json()
+    if res.status_code == requests.codes.ok:
         security_token = res.headers["X-SECURITY-TOKEN"]
         cst = res.headers["CST"]
         return data, res.headers, security_token, cst
-    raise ValueError("ERROR: " + str(res.getcode()) + " : " + data.decode("utf-8"))
+    raise ValueError("ERROR: " + str(res.status_code) + " : " + str(data))
 
 
 def log_out(security_token, cst, demo=True):
-    conn, headers = _create_connection(security_token, cst, demo)
-    payload = ""
-    conn.request("DELETE", "/api/v1/session", payload, headers)
-    res = conn.getresponse()
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
+    res = requests.delete(_get_url(demo) + "/api/v1/session", headers=headers)
     return res
 
 
 def get_positions(security_token, cst, demo=True):
-    conn, headers = _create_connection(security_token, cst, demo)
-    payload = ""
-    conn.request("GET", "/api/v1/positions", payload, headers)
-    res = conn.getresponse()
-    data = res.read()
-    jdata = json.loads(data.decode("utf-8"))
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
+    res = requests.get(_get_url(demo) + "/api/v1/positions", headers=headers)
+
+    jdata = res.json()
 
     df = pd.DataFrame.from_dict(pd.json_normalize(jdata))
 
@@ -153,7 +130,7 @@ def get_positions(security_token, cst, demo=True):
 
 
 def set_positions(security_token, cst, demo=True):
-    conn, headers = _create_connection(security_token, cst, demo)
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
     payload = json.dumps(
         {
             "epic": "SILVER",
@@ -165,29 +142,24 @@ def set_positions(security_token, cst, demo=True):
         }
     )
     headers["Content-Type"] = "application/json"
-    conn.request("POST", "/api/v1/positions", payload, headers)
-    res = conn.getresponse()
-    data = res.read()
-    print(data.decode("utf-8"))
+    res = requests.post(_get_url(demo) + "/api/v1/positions", payload, headers=headers)
+    print(res.json())
 
 
 def get_orders(security_token, cst, demo=True):
-    conn, headers = _create_connection(security_token, cst, demo)
-    payload = ""
-    conn.request("GET", "/api/v1/workingorders", payload, headers)
-    res = conn.getresponse()
-    data = res.read()
-    print(data.decode("utf-8"))
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
+    res = requests.get(_get_url(demo) + "/api/v1/workingorders", headers=headers)
+    print(res.json())
 
 
 def set_order(security_token, cst, demo=True):
-    conn, headers = _create_connection(security_token, cst, demo)
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
     payload = json.dumps(
         {"epic": "SILVER", "direction": "BUY", "size": 1, "level": 20, "type": "LIMIT"}
     )
     headers["Content-Type"] = "application/json"
 
-    conn.request("POST", "/api/v1/workingorders", payload, headers)
-    res = conn.getresponse()
-    data = res.read()
-    print(data.decode("utf-8"))
+    res = requests.post(
+        _get_url(demo) + "/api/v1/workingorders", payload, headers=headers
+    )
+    print(res.json())

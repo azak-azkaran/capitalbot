@@ -2,22 +2,16 @@ import http.client
 import capital
 import yaml
 import os
+import pytest
+import requests
+import mock_capital.mock_server as test_http_server
 
 
-def test__set_connection():
-    conn = capital._get_connection(True)
-    assert conn != None
-    assert conn.host == capital.CAPITAL_BACKEND_DEMO
-
-
-def test__server_time():
-    res = capital.server_time(True)
-    assert res != None
-    assert res.getcode() == 200
-    data = res.read()
-    print(data.decode("utf-8"))
-    res.close()
-    assert res.closed == True
+@pytest.fixture()
+def setup_mock(monkeypatch):
+    # store a reference to the old get method
+    monkeypatch.setattr(requests, "get", test_http_server.mocked_get)
+    monkeypatch.setattr(requests, "post", test_http_server.mocked_get)
 
 
 def setup():
@@ -44,6 +38,28 @@ def setup():
             return api_key, password, identifier
 
 
+def test__server_time(setup_mock):
+    res = capital.server_time(True)
+    assert res != None
+    assert res.status_code == 200
+
+    js = res.json()
+    assert js != None
+
+
+def test__ping(setup_mock):
+    security, cst = setup_session()
+    assert security == "test_token"
+    assert cst == "test"
+
+    res = capital.ping(security, cst)
+    assert res != None
+    assert res.status_code == 200
+
+    data = res.json()
+    assert data != None
+
+
 def setup_session():
     api_key, password, identifier = setup()
     assert api_key != None
@@ -55,7 +71,7 @@ def setup_session():
     return security, cst
 
 
-def test__create_session():
+def test__create_session(setup_mock):
     api_key, password, identifier = setup()
     assert api_key != None
     assert password != None
@@ -107,17 +123,6 @@ def test__download():
         assert True
 
 
-def test__ping():
-    security, cst = setup_session()
-    res = capital.ping(security, cst)
-    assert res != None
-    assert res.getcode() == 200
-
-    data = res.read()
-    assert data != None
-    assert data.decode("utf-8") != ""
-
-
 def test__get_positions():
     security, cst = setup_session()
     df = capital.get_positions(security, cst)
@@ -130,8 +135,8 @@ def test__log_out():
     security, cst = setup_session()
     res = capital.log_out(security, cst)
     assert res != None
-    assert res.getcode() == 200
+    assert res.status_code == 200
 
-    data = res.read()
+    data = res.json()
     assert data != None
-    assert data.decode("utf-8") != ""
+    assert data != ""

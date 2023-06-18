@@ -3,3 +3,4 @@ argparse
 pandas
 yfinance
 matplotlib
+requests
