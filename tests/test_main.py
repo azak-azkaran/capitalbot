@@ -7,11 +7,21 @@ import pandas as pd
 import json
 import numpy as np
 import os
+import pytest
+import requests
+import mock_capital.mock_server as test_http_server
 
 TEST_SYMBOL = "AAPL"
 TEST_JSON_PATH = "./" + TEST_SYMBOL + ".json"
 TEST_CSV_PATH = "./" + TEST_SYMBOL + ".csv"
 TEST_CONFIG_PATH = "./tests/test_config.yaml"
+
+
+@pytest.fixture()
+def setup_mock(monkeypatch):
+    # store a reference to the old get method
+    monkeypatch.setattr(requests, "get", test_http_server.mocked_get)
+    monkeypatch.setattr(requests, "post", test_http_server.mocked_get)
 
 
 def test_parse_args():
@@ -65,7 +75,7 @@ def test_save():
     assert os.path.isfile(TEST_JSON_PATH) == False
 
 
-def test_capitalize():
+def test_capitalize(setup_mock):
     if not os.path.exists("config.yaml"):
         print("No config file Probably Runner")
         args = main.parse_args(TEST_CONFIG_PATH)

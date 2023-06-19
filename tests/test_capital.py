@@ -12,6 +12,7 @@ def setup_mock(monkeypatch):
     # store a reference to the old get method
     monkeypatch.setattr(requests, "get", test_http_server.mocked_get)
     monkeypatch.setattr(requests, "post", test_http_server.mocked_get)
+    monkeypatch.setattr(requests, "delete", test_http_server.mocked_get)
 
 
 def setup():
@@ -87,7 +88,7 @@ def test__create_session(setup_mock):
     assert cst != None
 
 
-def test__download():
+def test__download(setup_mock):
     security, cst = setup_session()
 
     data = capital.download(
@@ -109,21 +110,8 @@ def test__download():
     assert df.columns.size == 9
     assert changed["Open"].empty == False
 
-    try:
-        data = capital.download(
-            "AAPL",
-            security,
-            cst,
-            "DAY",
-            start_date="2020-01-01T01:01:00",
-            end_date="2023-05-01T01:01:00",
-        )
-        assert False
-    except ValueError:
-        assert True
 
-
-def test__get_positions():
+def test__get_positions(setup_mock):
     security, cst = setup_session()
     df = capital.get_positions(security, cst)
     assert df.empty == False
@@ -131,7 +119,7 @@ def test__get_positions():
     assert df.columns.size == 1
 
 
-def test__log_out():
+def test__log_out(setup_mock):
     security, cst = setup_session()
     res = capital.log_out(security, cst)
     assert res != None

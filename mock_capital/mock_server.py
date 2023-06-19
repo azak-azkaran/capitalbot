@@ -40,10 +40,24 @@ def session():
     assert False
 
 
+def prices():
+    with open("./mock_capital/get_prices.json", "r") as f:
+        return json.load(f)
+    assert False
+
+
+def positions():
+    with open("./mock_capital/get_positions.json", "r") as f:
+        return json.load(f)
+    assert False
+
+
 options = {
     "/api/v1/ping": ping,
     "/api/v1/time": time,
     "/api/v1/session": session,
+    "/api/v1/prices/AAPL": prices,
+    "/api/v1/positions": positions,
 }
 
 
@@ -54,6 +68,7 @@ def mocked_get(uri, *args, **kwargs):
     one of those that have been supplied.
     """
     _, id = uri.split(capital.CAPITAL_BACKEND_DEMO, 1)
+    id = id.split("?", 1)[0]
     returnjson = options[id]()
 
     # create a mocked requests object
