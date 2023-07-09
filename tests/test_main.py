@@ -79,11 +79,16 @@ def test_save():
 
 
 def test_capitalize(setup_mock):
-    print("No config file Probably Runner")
-    args = main.parse_args(TEST_CONFIG_PATH)
-    args.capital_api_key = os.environ.get("CAPITAL_API_TOKEN")
-    args.capital_identifier = os.environ.get("CAPITAL_IDENTIFIER")
-    args.capital_password = os.environ.get("CAPITAL_PASSWORD")
+    if not os.path.exists("config.yaml"):
+        print("No config file Probably Runner")
+        args = main.parse_args(TEST_CONFIG_PATH)
+        args.capital_api_key = os.environ.get("CAPITAL_API_TOKEN")
+        args.capital_identifier = os.environ.get("CAPITAL_IDENTIFIER")
+        args.capital_password = os.environ.get("CAPITAL_PASSWORD")
+    else:
+        args = main.parse_args("./config.yaml")
+        args.symbol = "AAPL"
+        args.filename = "foo.png"
 
     assert args.capital_api_key != None
     assert args.capital_api_key != ""
@@ -91,6 +96,10 @@ def test_capitalize(setup_mock):
     assert args.dl_end != None
 
     df = main.capitalize(args)
+
+    supertrend_frame = main.supertrend(df, args.atr_period, args.atr_multiplier)
+    df = df.join(supertrend_frame)
+
     main.plot_frame(df, "test.png")
     assert os.path.isfile("./test.png")
 

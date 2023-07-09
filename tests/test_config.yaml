@@ -3,3 +3,4 @@ atr:
   multiplier: 10
   period: 3
 period: 5d
+filename: "foo.png"

@@ -1,6 +1,7 @@
 import argparse
 import yfinance as yf
 from supertrend import supertrend
+from supertrend import find_optimal_parameter
 import matplotlib.pyplot as plt
 import yaml
 import sys
@@ -10,6 +11,9 @@ import pandas as pd
 
 
 from datetime import datetime, timezone, timedelta
+
+FINAL_UPPER = "Final Upperband"
+FINAL_LOWER = "Final Lowerband"
 
 
 class Config:
@@ -25,6 +29,8 @@ class Config:
     capital_identifier = ""
     capital_security_token = ""
     capital_cst_token = ""
+    filename = None
+    mode = None
     demo = True
 
 
@@ -101,6 +107,12 @@ def parse_args(filename):
         if conf.get("end") != None:
             args.dl_end = conf.get("end")
 
+        if conf.get("filename") != None:
+            args.filename = conf.get("filename")
+
+        if conf.get("mode") != None:
+            args.mode = conf.get("mode")
+
     return args
 
 
@@ -119,26 +131,58 @@ def download(symbol, interval, period="max", start_date=None, end_date=None):
     )
     return df
 
+def mode_backtest(df, args):
+    optimal_param = find_optimal_parameter(df)
+    print(
+        f"Best parameter set: ATR Period={optimal_param[0]}, Multiplier={optimal_param[1]}, ROI={optimal_param[2]}"
+    )
+
+
+def mode_supertrend(df, args):
+    print(df)
+    supertrend_frame = supertrend(df, args.atr_period, args.atr_multiplier)
+
+    print(supertrend_frame)
+    df = df.join(supertrend_frame)
+
+    if args.filename is None:
+        filename = args.symbol + "_-_" + str(args.dl_start) + "_-_" + str(args.dl_end) + ".png"
+    else:
+        filename = args.filename
+    plot_frame(df, filename)
+
+
 
 def main(argv):
     """
     main
     """
     args = parse_args(argv[0])
-    df = download(args.symbol, "5d", "1m")
-    print(df)
-    supertrend_frame = supertrend(df, args.atr_period, args.atr_multiplier)
+    if args.capital_api_key != "":
+        print("Loading from capital")
+        df = capitalize(args)
 
-    print(supertrend_frame)
-    df = df.join(supertrend_frame)
-    plot_frame(df, "foo.png")
-
-
+    else:
+        print("Loading from yahoo")
+        df = download(args.symbol, "5d", "1m")
+    
+    if args.mode == "supertrend":
+        return mode_supertrend(df , args)
+    elif args.mode == "backtest":
+        return mode_backtest(df , args)
+    else: 
+        print("No mode specified")
+    
 def plot_frame(df, filename, entry=None, exit=None):
     plt.figure(figsize=(16, 9), dpi=360)
     plt.plot(df["Close"], label="Close Price")
-    plt.plot(df["Final Lowerband"], "g", label="Final Lowerband")
-    plt.plot(df["Final Upperband"], "r", label="Final Upperband")
+
+    if FINAL_LOWER in df.columns:
+        plt.plot(df[FINAL_LOWER], "g", label=FINAL_LOWER)
+
+    if FINAL_UPPER in df.columns:
+        plt.plot(df[FINAL_UPPER], "r", label=FINAL_UPPER)
+
     if entry != None:
         for e in entry:
             plt.plot(
@@ -195,13 +239,12 @@ def capitalize(config):
         end_date=end_date,
     )
 
-    df, changed = capital.convert_download(res)
+    _, changed = capital.convert_download(res)
+    changed.index = pd.to_datetime(changed.index, format="%Y-%m-%dT%H:%M:%S")
+    # sf = supertrend(changed, config.atr_period, config.atr_multiplier)
+    # df = changed.join(sf)
 
-    sf = supertrend(changed, config.atr_period, config.atr_multiplier)
-    df = changed.join(sf)
-    df.index = pd.to_datetime(df.index, format="%Y-%m-%dT%H:%M:%S")
-
-    return df
+    return changed
 
 
 def trade(config, df):
