@@ -131,6 +131,7 @@ def download(symbol, interval, period="max", start_date=None, end_date=None):
     )
     return df
 
+
 def mode_backtest(df, args):
     optimal_param = find_optimal_parameter(df)
     print(
@@ -146,11 +147,12 @@ def mode_supertrend(df, args):
     df = df.join(supertrend_frame)
 
     if args.filename is None:
-        filename = args.symbol + "_-_" + str(args.dl_start) + "_-_" + str(args.dl_end) + ".png"
+        filename = (
+            args.symbol + "_-_" + str(args.dl_start) + "_-_" + str(args.dl_end) + ".png"
+        )
     else:
         filename = args.filename
     plot_frame(df, filename)
-
 
 
 def main(argv):
@@ -165,14 +167,15 @@ def main(argv):
     else:
         print("Loading from yahoo")
         df = download(args.symbol, "5d", "1m")
-    
+
     if args.mode == "supertrend":
-        return mode_supertrend(df , args)
+        return mode_supertrend(df, args)
     elif args.mode == "backtest":
-        return mode_backtest(df , args)
-    else: 
+        return mode_backtest(df, args)
+    else:
         print("No mode specified")
-    
+
+
 def plot_frame(df, filename, entry=None, exit=None):
     plt.figure(figsize=(16, 9), dpi=360)
     plt.plot(df["Close"], label="Close Price")
