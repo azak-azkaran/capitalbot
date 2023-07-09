@@ -28,6 +28,47 @@ class Config:
     demo = True
 
 
+def parse_period(period):
+    # 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y
+    days = 0
+    months = 0
+    years = 0
+    if period == "1d":
+        days = 1
+    elif period == "5d":
+        days = 5
+    elif period == "1mo":
+        months = 1
+    elif period == "3mo":
+        months = 3
+    elif period == "6mo":
+        months = 6
+    elif period == "1y":
+        years = 1
+    elif period == "2y":
+        years = 2
+    elif period == "5y":
+        years = 5
+    elif period == "10y":
+        years = 10
+    else:
+        raise ValueError(
+            "Period is not equviliant to: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y"
+        )
+
+    date = datetime.now()
+    start_date = date - timedelta(days=days)
+
+    if months > 0:
+        start_date = start_date.month - months
+
+    if years > 0:
+        start_date = start_date.year - years
+
+    end_date = date - timedelta(hours=2)
+    return start_date, end_date
+
+
 def parse_args(filename):
     with open(filename, "r") as file:
         conf = yaml.safe_load(file)
@@ -48,6 +89,17 @@ def parse_args(filename):
             args.capital_api_key = conf.get("capital").get("api_key")
             args.capital_password = conf.get("capital").get("password")
             args.capital_identifier = conf.get("capital").get("identifier")
+
+        if conf.get("period") != None:
+            start, end = parse_period(conf.get("period"))
+            args.dl_start = start
+            args.dl_end = end
+
+        if conf.get("start") != None:
+            args.dl_start = conf.get("start")
+
+        if conf.get("end") != None:
+            args.dl_end = conf.get("end")
 
     return args
 
@@ -128,11 +180,11 @@ def capitalize(config):
         demo=True,
     )
 
-    date = datetime.now().replace(second=0)
-    start_date = (date - timedelta(days=3, hours=2)).strftime(
-        capital.CAPITAL_STRING_FORMAT
-    )
-    end_date = (date - timedelta(hours=2)).strftime(capital.CAPITAL_STRING_FORMAT)
+    if config.dl_start != None:
+        start_date = config.dl_start.strftime(capital.CAPITAL_STRING_FORMAT)
+
+    if config.dl_end != None:
+        end_date = config.dl_end.strftime(capital.CAPITAL_STRING_FORMAT)
 
     res = capital.download(
         config.symbol,

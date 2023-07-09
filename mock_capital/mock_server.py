@@ -23,53 +23,75 @@ class MockResponse:
         return self.closed
 
 
-def ping():
+def _get_ping():
     return {"status": "OK"}
 
 
-def time():
+def _get_time():
     # Opening JSON file
     with open("./mock_capital/get_servertime.json", "r") as f:
         return json.load(f)
     assert False
 
 
-def session():
-    with open("./mock_capital/post_session.json", "r") as f:
+def _get_session():
+    with open("./mock_capital/get_session.json", "r") as f:
         return json.load(f)
     assert False
 
 
-def prices():
+def _get_prices():
     with open("./mock_capital/get_prices.json", "r") as f:
         return json.load(f)
     assert False
 
 
-def positions():
+def _get_positions():
     with open("./mock_capital/get_positions.json", "r") as f:
         return json.load(f)
     assert False
 
 
-options = {
-    "/api/v1/ping": ping,
-    "/api/v1/time": time,
-    "/api/v1/session": session,
-    "/api/v1/prices/AAPL": prices,
-    "/api/v1/positions": positions,
+def _post_session():
+    with open("./mock_capital/post_session.json", "r") as f:
+        return json.load(f)
+    assert False
+
+
+def _post_positions():
+    with open("./mock_capital/post_positions.json", "r") as f:
+        return json.load(f)
+    assert False
+
+
+post_options = {
+    "/api/v1/session": _post_session,
+    "/api/v1/positions": _post_positions,
+}
+
+get_options = {
+    "/api/v1/ping": _get_ping,
+    "/api/v1/time": _get_time,
+    "/api/v1/session": _get_session,
+    "/api/v1/prices/AAPL": _get_prices,
+    "/api/v1/positions": _get_positions,
 }
 
 
-def mocked_get(uri, *args, **kwargs):
-    """A method replacing Requests.get
-    Returns either a mocked response object (with json method)
-    or the default response object if the uri doesn't match
-    one of those that have been supplied.
-    """
+def mocked_post(uri, *args, **kwargs):
     _, id = uri.split(capital.CAPITAL_BACKEND_DEMO, 1)
     id = id.split("?", 1)[0]
-    returnjson = options[id]()
+    returnjson = post_options[id]()
+
+    # create a mocked requests object
+    mock = MockResponse(returnjson, 200)
+    return mock
+
+
+def mocked_get(uri, *args, **kwargs):
+    _, id = uri.split(capital.CAPITAL_BACKEND_DEMO, 1)
+    id = id.split("?", 1)[0]
+    returnjson = get_options[id]()
 
     # create a mocked requests object
     mock = MockResponse(returnjson, 200)

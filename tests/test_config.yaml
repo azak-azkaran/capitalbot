@@ -2,3 +2,4 @@ symbol: AAPL
 atr:
   multiplier: 10
   period: 3
+period: 5d

@@ -10,6 +10,7 @@ import os
 import pytest
 import requests
 import mock_capital.mock_server as test_http_server
+from datetime import datetime, timedelta
 
 TEST_SYMBOL = "AAPL"
 TEST_JSON_PATH = "./" + TEST_SYMBOL + ".json"
@@ -32,6 +33,8 @@ def test_parse_args():
     assert args.atr_period == 3
     assert args.atr_multiplier != None
     assert args.atr_multiplier == 10
+    assert args.dl_end != None
+    assert args.dl_start != None
 
 
 def test_download():
@@ -76,17 +79,32 @@ def test_save():
 
 
 def test_capitalize(setup_mock):
-    if not os.path.exists("config.yaml"):
-        print("No config file Probably Runner")
-        args = main.parse_args(TEST_CONFIG_PATH)
-        args.capital_api_key = os.environ.get("CAPITAL_API_TOKEN")
-        args.capital_identifier = os.environ.get("CAPITAL_IDENTIFIER")
-        args.capital_password = os.environ.get("CAPITAL_PASSWORD")
-    else:
-        args = main.parse_args("./config.yaml")
+    print("No config file Probably Runner")
+    args = main.parse_args(TEST_CONFIG_PATH)
+    args.capital_api_key = os.environ.get("CAPITAL_API_TOKEN")
+    args.capital_identifier = os.environ.get("CAPITAL_IDENTIFIER")
+    args.capital_password = os.environ.get("CAPITAL_PASSWORD")
 
     assert args.capital_api_key != None
     assert args.capital_api_key != ""
+    assert args.dl_start != None
+    assert args.dl_end != None
+
     df = main.capitalize(args)
     main.plot_frame(df, "test.png")
     assert os.path.isfile("./test.png")
+
+
+def test_parse_period():
+    start, end = main.parse_period("5d")
+    assert datetime.now() - start > timedelta(days=5)
+    assert datetime.now() - end < timedelta(days=3)
+
+    try:
+        start, end = main.parse_period("6d")
+        assert Fal6e
+    except ValueError:
+        assert True
+
+    start, end = main.parse_period("1d")
+    assert datetime.now() - start > timedelta(days=1)

@@ -125,25 +125,33 @@ def get_positions(security_token, cst, demo=True):
     jdata = res.json()
 
     df = pd.DataFrame.from_dict(pd.json_normalize(jdata))
-
     return df
 
 
-def set_positions(security_token, cst, demo=True):
+def set_positions(
+    epic,
+    size,
+    stop_level,
+    profit_level,
+    security_token,
+    cst,
+    direction="BUY",
+    demo=True,
+):
     headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
     payload = json.dumps(
         {
-            "epic": "SILVER",
-            "direction": "BUY",
-            "size": 1,
+            "epic": epic,
+            "direction": direction,
+            "size": size,
             "guaranteedStop": True,
-            "stopLevel": 20,
-            "profitLevel": 27,
+            "stopLevel": stop_level,
+            "profitLevel": profit_level,
         }
     )
     headers["Content-Type"] = "application/json"
     res = requests.post(_get_url(demo) + "/api/v1/positions", payload, headers=headers)
-    print(res.json())
+    return res
 
 
 def get_orders(security_token, cst, demo=True):

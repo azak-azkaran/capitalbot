@@ -4,6 +4,7 @@ import yaml
 import os
 import pytest
 import requests
+import json
 import mock_capital.mock_server as test_http_server
 
 
@@ -11,7 +12,7 @@ import mock_capital.mock_server as test_http_server
 def setup_mock(monkeypatch):
     # store a reference to the old get method
     monkeypatch.setattr(requests, "get", test_http_server.mocked_get)
-    monkeypatch.setattr(requests, "post", test_http_server.mocked_get)
+    monkeypatch.setattr(requests, "post", test_http_server.mocked_post)
     monkeypatch.setattr(requests, "delete", test_http_server.mocked_get)
 
 
@@ -128,3 +129,15 @@ def test__log_out(setup_mock):
     data = res.json()
     assert data != None
     assert data != ""
+
+
+def test__set_positions(setup_mock):
+    security, cst = setup_session()
+    res = capital.set_positions("SILVER", 1, 20, 27, security, cst)
+    assert res != None
+    assert res.status_code == 200
+
+    answer = res.json()
+    assert answer != None
+    print(answer)
+    assert answer["dealReference"] != None
