@@ -148,7 +148,12 @@ def mode_supertrend(df, args):
 
     if args.filename is None:
         filename = (
-            args.symbol + "_-_" + str(args.dl_start) + "_-_" + str(args.dl_end) + ".png"
+            args.symbol
+            + "_-_"
+            + args.dl_start.strftime(capital.CAPITAL_STRING_FORMAT)
+            + "_-_"
+            + args.dl_end.strftime(capital.CAPITAL_STRING_FORMAT)
+            + ".png"
         )
     else:
         filename = args.filename
@@ -168,12 +173,12 @@ def main(argv):
         print("Loading from yahoo")
         df = download(args.symbol, "5d", "1m")
 
-    if args.mode == "supertrend":
+    if args.mode == "supertrend" or args.mode == "st":
         return mode_supertrend(df, args)
-    elif args.mode == "backtest":
+    elif args.mode == "backtest" or args.mode == "backtesting" or args.mode == "bt":
         return mode_backtest(df, args)
     else:
-        print("No mode specified")
+        raise ValueError("No mode specified")
 
 
 def plot_frame(df, filename, entry=None, exit=None):
@@ -243,10 +248,7 @@ def capitalize(config):
     )
 
     _, changed = capital.convert_download(res)
-    changed.index = pd.to_datetime(changed.index, format="%Y-%m-%dT%H:%M:%S")
-    # sf = supertrend(changed, config.atr_period, config.atr_multiplier)
-    # df = changed.join(sf)
-
+    changed.index = pd.to_datetime(changed.index, format=capital.CAPITAL_STRING_FORMAT)
     return changed
 
 
