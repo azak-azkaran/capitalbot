@@ -7,6 +7,7 @@ import yaml
 import sys
 import os
 import capital
+import time
 import pandas as pd
 
 
@@ -139,11 +140,14 @@ def mode_backtest(df, args):
     )
 
 
-def mode_supertrend(df, args):
-    print(df)
+def mode_supertrend(df, args, debug=False):
+    if (debug):
+        print(df)
+
     supertrend_frame = supertrend(df, args.atr_period, args.atr_multiplier)
 
-    print(supertrend_frame)
+    if (debug):
+        print(supertrend_frame)
     df = df.join(supertrend_frame)
 
     if args.filename is None:
@@ -175,10 +179,19 @@ def main(argv):
 
     if args.mode == "supertrend" or args.mode == "st":
         return mode_supertrend(df, args)
+    elif args.mode== "constant_supertrend" or args.mode == "c_st":
+        return mode_constant_supertrend(args)
     elif args.mode == "backtest" or args.mode == "backtesting" or args.mode == "bt":
         return mode_backtest(df, args)
     else:
         raise ValueError("No mode specified")
+
+def mode_constant_supertrend(args):
+    while(True):
+        df = capitalize(args)
+        mode_supertrend(df, args)
+        time.sleep(60)
+    print("dying")
 
 
 def plot_frame(df, filename, entry=None, exit=None):
@@ -215,7 +228,6 @@ def plot_frame(df, filename, entry=None, exit=None):
                 label="Exit",
             )
     plt.savefig(filename)
-
 
 def capitalize(config):
     if (
