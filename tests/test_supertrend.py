@@ -4,7 +4,7 @@ import os
 from supertrend import supertrend
 from supertrend import backtest_supertrend
 from supertrend import find_optimal_parameter
-from datetime import datetime
+from datetime import datetime, timedelta
 from main import plot_frame
 
 
@@ -30,7 +30,15 @@ def test_backtest_supertrend():
 
     stock_list = ["AAPL"]
     for symbol in stock_list:
-        df = yf.download(symbol, start="2023-06-05", end="2023-06-10", interval="5m")
+        date = datetime.now() - timedelta(days=1)
+        start_date = date - timedelta(days=5)
+
+        df = yf.download(
+            symbol,
+            start=start_date.strftime("%Y-%m-%d"),
+            end=date.strftime("%Y-%m-%d"),
+            interval="5m",
+        )
         st = supertrend(df, atr_period, atr_multiplier)
         df = df.join(st)
 

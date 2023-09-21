@@ -171,3 +171,11 @@ def set_order(security_token, cst, demo=True):
         _get_url(demo) + "/api/v1/workingorders", payload, headers=headers
     )
     print(res.json())
+
+
+def search_symbols(search_term, security_token, cst, demo=True):
+    headers = {"X-SECURITY-TOKEN": security_token, "CST": cst}
+    res = requests.get(
+        _get_url(demo) + "/api/v1/markets?searchTerm=" + search_term, headers=headers
+    )
+    return res

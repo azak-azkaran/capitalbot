@@ -110,10 +110,12 @@ def test_parse_period():
     assert datetime.now() - end < timedelta(days=3)
 
     try:
-        start, end = main.parse_period("6d")
-        assert Fal6e
+        start, end = main.parse_period("6day")
+        assert False
     except ValueError:
         assert True
 
     start, end = main.parse_period("1d")
     assert datetime.now() - start > timedelta(days=1)
+
+    start, end = main.parse_period("1mo")

@@ -11,7 +11,7 @@ import time
 import pandas as pd
 
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 
 FINAL_UPPER = "Final Upperband"
 FINAL_LOWER = "Final Lowerband"
@@ -34,33 +34,24 @@ class Config:
     mode = None
     demo = True
 
+    def __str__(self) -> str:
+        return "API KEY: " + self.capital_api_key + " " + self.capital_password
+
 
 def parse_period(period):
     # 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y
     days = 0
     months = 0
     years = 0
-    if period == "1d":
-        days = 1
-    elif period == "5d":
-        days = 5
-    elif period == "1mo":
-        months = 1
-    elif period == "3mo":
-        months = 3
-    elif period == "6mo":
-        months = 6
-    elif period == "1y":
-        years = 1
-    elif period == "2y":
-        years = 2
-    elif period == "5y":
-        years = 5
-    elif period == "10y":
-        years = 10
+    if period.endswith("d"):
+        days = int(period.split("d")[0])
+    elif period.endswith("mo"):
+        months = int(period.split("mo")[0])
+    elif period.endswith("y"):
+        years = int(period.split("y")[0])
     else:
         raise ValueError(
-            "Period is not equviliant to: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y"
+            "Period needs to end with: d for days, mo for months and y for years"
         )
 
     date = datetime.now()
@@ -136,7 +127,7 @@ def download(symbol, interval, period="max", start_date=None, end_date=None):
 def mode_backtest(df, args):
     optimal_param = find_optimal_parameter(df)
     print(
-        f"Best parameter set: ATR Period={optimal_param[0]}, Multiplier={optimal_param[1]}, ROI={optimal_param[2]}"
+        f"Best parameter {args.symbol} set: ATR Period={optimal_param[0]}, Multiplier={optimal_param[1]}, ROI={optimal_param[2]}%"
     )
 
 
@@ -171,6 +162,7 @@ def main(argv):
     args = parse_args(argv[0])
     if args.capital_api_key != "":
         print("Loading from capital")
+        print(args)
         df = capitalize(args)
 
     else:

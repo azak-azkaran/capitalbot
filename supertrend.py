@@ -109,7 +109,7 @@ def backtest_supertrend(df, investment, debug=False, commission=5):
     roi = round(earning / investment * 100, 2)
     if debug:
         print(
-            f"Earning from investing ${investment} is ${round(earning,2)} (ROI = {roi}%)"
+            f"Earning from investing ${investment} is ${round(earning,2)} (ROI = {roi} \%)"
         )
     return entry, exit, roi
 
@@ -118,8 +118,8 @@ def backtest_supertrend(df, investment, debug=False, commission=5):
 def find_optimal_parameter(
     df,
     investment=10000,
-    atr_period=[7, 8, 9, 10],
-    atr_multiplier=[1.0, 1.5, 2.0, 2.5, 3.0],
+    atr_period=[6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    atr_multiplier=[0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0],
 ):
     roi_list = []
 
