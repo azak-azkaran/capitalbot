@@ -45,7 +45,10 @@ def test_download():
 
 def test_main():
     main.main([TEST_CONFIG_PATH])
-    assert os.path.isfile("./foo.png")
+    assert os.path.isfile("./plot/foo.png")
+    os.remove("./plot/foo.png")
+    assert not os.path.isfile("./plot/foo.png")
+
 
 
 def test_save():
@@ -101,7 +104,11 @@ def test_capitalize(setup_mock):
     df = df.join(supertrend_frame)
 
     main.plot_frame(df, "test.png")
-    assert os.path.isfile("./test.png")
+    assert os.path.isdir("plots")
+    assert os.path.isfile("./plots/test.png")
+    os.path.remove("plots/test.png")
+    assert not os.path.isfile("./plots/test.png")
+
 
 
 def test_parse_period():
@@ -119,3 +126,9 @@ def test_parse_period():
     assert datetime.now() - start > timedelta(days=1)
 
     start, end = main.parse_period("1mo")
+
+
+def test_calculate_ema():
+    df = main.download(TEST_SYMBOL, "1m")
+    assert df.empty == False
+    assert df.columns.size == 6

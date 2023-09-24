@@ -132,12 +132,12 @@ def mode_backtest(df, args):
 
 
 def mode_supertrend(df, args, debug=False):
-    if (debug):
+    if debug:
         print(df)
 
     supertrend_frame = supertrend(df, args.atr_period, args.atr_multiplier)
 
-    if (debug):
+    if debug:
         print(supertrend_frame)
     df = df.join(supertrend_frame)
 
@@ -171,15 +171,16 @@ def main(argv):
 
     if args.mode == "supertrend" or args.mode == "st":
         return mode_supertrend(df, args)
-    elif args.mode== "constant_supertrend" or args.mode == "c_st":
+    elif args.mode == "constant_supertrend" or args.mode == "c_st":
         return mode_constant_supertrend(args)
     elif args.mode == "backtest" or args.mode == "backtesting" or args.mode == "bt":
         return mode_backtest(df, args)
     else:
         raise ValueError("No mode specified")
 
+
 def mode_constant_supertrend(args):
-    while(True):
+    while True:
         df = capitalize(args)
         mode_supertrend(df, args)
         time.sleep(60)
@@ -187,6 +188,10 @@ def mode_constant_supertrend(args):
 
 
 def plot_frame(df, filename, entry=None, exit=None):
+    if not os.path.exists("plots"):
+        os.makedirs("plots")
+
+    filename = "plots/" + filename
     plt.figure(figsize=(16, 9), dpi=360)
     plt.plot(df["Close"], label="Close Price")
 
@@ -220,6 +225,7 @@ def plot_frame(df, filename, entry=None, exit=None):
                 label="Exit",
             )
     plt.savefig(filename)
+
 
 def capitalize(config):
     if (
