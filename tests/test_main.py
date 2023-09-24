@@ -110,7 +110,6 @@ def test_capitalize(setup_mock):
     assert not os.path.isfile("./plots/test.png")
 
 
-
 def test_parse_period():
     start, end = main.parse_period("5d")
     assert datetime.now() - start > timedelta(days=5)
