@@ -31,10 +31,10 @@ def supertrend(df, atr_period, multiplier):
         curr, prev = i, i - 1
 
         # if current close price crosses above upperband
-        if close[curr] > final_upperband[prev]:
+        if close.iloc[curr] > final_upperband.iloc[prev]:
             supertrend[curr] = True
         # if current close price crosses below lowerband
-        elif close[curr] < final_lowerband[prev]:
+        elif close.iloc[curr] < final_lowerband.iloc[prev]:
             supertrend[curr] = False
         # else, the trend continues
         else:
@@ -42,21 +42,21 @@ def supertrend(df, atr_period, multiplier):
 
             # adjustment to the final bands
             if (
-                supertrend[curr] == True
-                and final_lowerband[curr] < final_lowerband[prev]
+                supertrend[curr] is True
+                and final_lowerband.iloc[curr] < final_lowerband.iloc[prev]
             ):
-                final_lowerband[curr] = final_lowerband[prev]
+                final_lowerband.iloc[curr] = final_lowerband.iloc[prev]
             if (
-                supertrend[curr] == False
-                and final_upperband[curr] > final_upperband[prev]
+                supertrend[curr] is False
+                and final_upperband.iloc[curr] > final_upperband.iloc[prev]
             ):
-                final_upperband[curr] = final_upperband[prev]
+                final_upperband.iloc[curr] = final_upperband.iloc[prev]
 
         # to remove bands according to the trend direction
-        if supertrend[curr] == True:
-            final_upperband[curr] = np.nan
+        if supertrend[curr] is True:
+            final_upperband.iloc[curr] = np.nan
         else:
-            final_lowerband[curr] = np.nan
+            final_lowerband.iloc[curr] = np.nan
 
     return pd.DataFrame(
         {
@@ -81,29 +81,29 @@ def backtest_supertrend(df, investment, debug=False, commission=5):
 
     for i in range(2, len(df)):
         # if not in position & price is on uptrend -> buy
-        if not in_position and is_uptrend[i]:
-            share = math.floor(equity / close[i])
+        if not in_position and is_uptrend.iloc[i]:
+            share = math.floor(equity / close.iloc[i])
             # if debug: print(f'EQUITY: {equity} close price: {close[i]}')
-            equity -= share * close[i]
-            entry.append((i, close[i]))
+            equity -= share * close.iloc[i]
+            entry.append((i, close.iloc[i]))
             in_position = True
             if debug:
                 print(
-                    f'Buy {share} shares at {round(close[i],2)} on {df.index[i].strftime("%Y/%m/%d")}'
+                    f'Buy {share} shares at {round(close.iloc[i],2)} on {df.index[i].strftime("%Y/%m/%d")}'
                 )
         # if in position & price is not on uptrend -> sell
-        elif in_position and not is_uptrend[i]:
-            equity += share * close[i] - commission
+        elif in_position and not is_uptrend.iloc[i]:
+            equity += share * close.iloc[i] - commission
             # if debug: print(f'EQUITY: {equity} close price: {close[i]}')
-            exit.append((i, close[i]))
+            exit.append((i, close.iloc[i]))
             in_position = False
             if debug:
                 print(
-                    f'Sell at {round(close[i],2)} on {df.index[i].strftime("%Y/%m/%d")}'
+                    f'Sell at {round(close.iloc[i],2)} on {df.index[i].strftime("%Y/%m/%d")}'
                 )
     # if still in position -> sell all share
     if in_position:
-        equity += share * close[i] - commission
+        equity += share * close.iloc[i] - commission
 
     earning = equity - investment
     roi = round(earning / investment * 100, 2)

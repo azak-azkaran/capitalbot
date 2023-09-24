@@ -48,7 +48,7 @@ def test_backtest_supertrend():
     assert len(exit) != 0
 
     plot_frame(df, foo_filename, entry, exit)
-    assert os.path.exists(foo_filename)
+    assert os.path.exists("plots/" + foo_filename)
 
 
 def test_find_optimal_parameter():

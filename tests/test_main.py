@@ -45,10 +45,10 @@ def test_download():
 
 def test_main():
     main.main([TEST_CONFIG_PATH])
-    assert os.path.isfile("./plot/foo.png")
-    os.remove("./plot/foo.png")
-    assert not os.path.isfile("./plot/foo.png")
 
+    assert os.path.isfile("./plots/foo.png")
+    os.remove("./plots/foo.png")
+    assert not os.path.isfile("./plots/foo.png")
 
 
 def test_save():
@@ -106,7 +106,7 @@ def test_capitalize(setup_mock):
     main.plot_frame(df, "test.png")
     assert os.path.isdir("plots")
     assert os.path.isfile("./plots/test.png")
-    os.path.remove("plots/test.png")
+    os.remove("plots/test.png")
     assert not os.path.isfile("./plots/test.png")
 
 

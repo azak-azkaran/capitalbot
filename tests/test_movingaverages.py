@@ -17,9 +17,10 @@ def test_sma():
     df = movingaverages.calculate_sma(df)
     assert df["SMA_Open"].empty == False
 
-    df = movingaverages.calculate_sma(df, location=3, smoothing=3 )
+    df = movingaverages.calculate_sma(df, location=3, smoothing=3)
     assert df["SMA_Close"].empty == False
     print(df)
+
 
 def test_cma():
     df = yf.download("AAPL", period="1d", interval="1h")
@@ -28,7 +29,6 @@ def test_cma():
     df = movingaverages.calculate_cma(df)
     assert df["CMA_Open"].empty == False
 
-    df = movingaverages.calculate_cma(df, period=5, location=3 )
+    df = movingaverages.calculate_cma(df, period=5, location=3)
     assert df["CMA_Close"].empty == False
     print(df)
-
