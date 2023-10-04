@@ -1,8 +1,8 @@
 import http.client
 import yfinance as yf
-from supertrend import supertrend
+from indicators import supertrend
 from datetime import datetime
-import main
+from main_module import main
 import pandas as pd
 import json
 import numpy as np
@@ -100,8 +100,8 @@ def test_capitalize(setup_mock):
 
     df = main.capitalize(args)
 
-    supertrend_frame = main.supertrend(df, args.atr_period, args.atr_multiplier)
-    df = df.join(supertrend_frame)
+    # supertrend_frame = main.mode_supertrend(df, args.atr_period, args.atr_multiplier)
+    # df = df.join(supertrend_frame)
 
     main.plot_frame(df, "test.png")
     assert os.path.isdir("plots")

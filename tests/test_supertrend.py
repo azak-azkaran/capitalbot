@@ -1,18 +1,16 @@
 import http.client
 import yfinance as yf
 import os
-from supertrend import supertrend
-from supertrend import backtest_supertrend
-from supertrend import find_optimal_parameter
+from indicators import supertrend
 from datetime import datetime, timedelta
-from main import plot_frame
+from main_module import main
 
 
 def test_supertrend():
     df = yf.download("AAPL", period="1d", interval="1h")
     assert df.empty == False
     print(df)
-    st = supertrend(df, 5, 10)
+    st = supertrend.supertrend(df, 5, 10)
     assert st.empty == False
 
     print(st)
@@ -39,21 +37,21 @@ def test_backtest_supertrend():
             end=date.strftime("%Y-%m-%d"),
             interval="5m",
         )
-        st = supertrend(df, atr_period, atr_multiplier)
+        st = supertrend.supertrend(df, atr_period, atr_multiplier)
         df = df.join(st)
 
     # df.tail(15)
-    entry, exit, roi = backtest_supertrend(df, 10000, debug=True)
+    entry, exit, roi = supertrend.backtest_supertrend(df, 10000, debug=True)
     assert len(entry) != 0
     assert len(exit) != 0
 
-    plot_frame(df, foo_filename, entry, exit)
+    main.plot_frame(df, foo_filename, entry, exit)
     assert os.path.exists("plots/" + foo_filename)
 
 
 def test_find_optimal_parameter():
     df = yf.download("AAPL", start="2023-06-05", end="2023-06-09", interval="5m")
-    optimal_param = find_optimal_parameter(df)
+    optimal_param = supertrend.find_optimal_parameter(df)
     print(
         f"Best parameter set: ATR Period={optimal_param[0]}, Multiplier={optimal_param[1]}, ROI={optimal_param[2]}"
     )

@@ -1,5 +1,5 @@
 import http.client
-import capital
+from main_module import capital
 import yaml
 import os
 import pytest
