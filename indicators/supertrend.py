@@ -15,14 +15,13 @@ def supertrend(df, atr_period, multiplier):
     true_range = true_range.abs().max(axis=1)
     # default ATR calculation in supertrend indicator
     atr = true_range.ewm(alpha=1 / atr_period, min_periods=atr_period).mean()
-    # df['atr'] = df['tr'].rolling(atr_period).mean()
 
     # HL2 is simply the average of high and low prices
     hl2 = (high + low) / 2
     # upperband and lowerband calculation
     # notice that final bands are set to be equal to the respective bands
-    final_upperband = upperband = hl2 + (multiplier * atr)
-    final_lowerband = lowerband = hl2 - (multiplier * atr)
+    final_upperband = hl2 + (multiplier * atr)
+    final_lowerband = hl2 - (multiplier * atr)
 
     # initialize Supertrend column to True
     supertrend = [True] * len(df)

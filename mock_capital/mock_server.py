@@ -1,5 +1,5 @@
 import json
-import capital
+from main_module import capital
 
 
 class MockResponse:
