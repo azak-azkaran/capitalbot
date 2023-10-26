@@ -3,7 +3,6 @@ import yfinance as yf
 from indicators import supertrend
 import matplotlib.pyplot as plt
 import yaml
-import sys
 import os
 import time
 from main_module import capital
@@ -263,7 +262,3 @@ def capitalize(config):
 
 def trade(config, df):
     pos = capital.get_positions(config.security_token, config.cst_token)
-
-
-if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
