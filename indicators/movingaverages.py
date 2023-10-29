@@ -16,10 +16,11 @@ class EMAStrategy(bt.Strategy):
         self.buyprice = None
         self.buycomm = None
 
-    def log(self, txt, dt=None):
+    def log(self, txt, dt=None, doprint=False):
         """Logging function fot this strategy"""
-        dt = dt or self.datas[0].datetime.date(0)
-        print(dt.isoformat() + " , " + txt)
+        if doprint:
+            dt = dt or self.datas[0].datetime.date(0)
+            print(dt.isoformat() + " , " + txt)
 
     def next(self):
         # Simply log the closing price of the series from the reference
@@ -73,6 +74,10 @@ class EMAStrategy(bt.Strategy):
 
         # Write down: no pending order
         self.order = None
+    
+    def stop(self):
+        self.log('(MA Period %2d) Ending Value %.2f' %
+                 (self.params.period, self.broker.getvalue()), doprint=True)
 
 
 def _calc(x):
