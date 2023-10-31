@@ -60,7 +60,7 @@ jobs:
           channels: conda-forge
           python-version: ${{ matrix.python }}
           activate-environment: capital
-          environment-file: environment.yml
+          environment-file: environment.yaml
           use-mamba: true
 
       - name: Create test coverage report
