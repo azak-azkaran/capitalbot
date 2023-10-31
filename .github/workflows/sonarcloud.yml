@@ -53,12 +53,14 @@ jobs:
       - name: Install dependencies
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
-          $CONDA/bin/conda env update --file environment.yaml
+          $CONDA/bin/conda env create --file environment.yaml
       #- name: Switch to conda
       #  run: |
       #    $CONDA/bin/conda activate capital
       - name: Run pytest
-        run: pytest --cov --cov-report=xml --cov-config=tox.ini --cov-branch tests
+        run: | 
+          $CONDA/bin/conda activate capital
+          pytest --cov --cov-report=xml --cov-config=tox.ini --cov-branch tests
         env:
           CAPITAL_API_TOKEN: ${{ secrets.CAPITAL_API_TOKEN }}
           CAPITAL_PASSWORD: ${{ secrets.CAPITAL_PASSWORD }}
