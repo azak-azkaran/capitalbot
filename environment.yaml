@@ -18,6 +18,7 @@ dependencies:
   - charset-normalizer=3.3.1=pyhd8ed1ab_0
   - colorama=0.4.6=pyhd8ed1ab_0
   - contourpy=1.1.1=py39ha90811c_1
+  - coverage=7.2.2=py39h5eee18b_0
   - cryptography=41.0.5=py39h211ada2_0
   - cycler=0.12.1=pyhd8ed1ab_0
   - distlib=0.3.7=pyhd8ed1ab_0
@@ -96,6 +97,7 @@ dependencies:
   - pypy3.9=7.3.13=h9557127_1
   - pysocks=1.7.1=pyha2e5f31_6
   - pytest=7.4.0=py39h06a4308_0
+  - pytest-cov=4.1.0=py39h06a4308_1
   - python=3.9.18=0_73_pypy
   - python-dateutil=2.8.2=pyhd8ed1ab_0
   - python-tzdata=2023.3=pyhd8ed1ab_0
@@ -111,6 +113,7 @@ dependencies:
   - sqlite=3.43.2=h2c6b66d_0
   - ta-lib=0.4.28=py39hf7fbf1e_0
   - tk=8.6.13=h2797004_0
+  - toml=0.10.2=pyhd3eb1b0_0
   - tomli=2.0.1=pyhd8ed1ab_0
   - tornado=6.3.3=py39hf860d4a_1
   - tox=4.11.3=pyhd8ed1ab_0
