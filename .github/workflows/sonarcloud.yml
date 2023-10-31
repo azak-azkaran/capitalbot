@@ -54,7 +54,7 @@ jobs:
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
           $CONDA/bin/conda env create --file environment.yaml
-          $CONDA/bin/conda activate capital
+          conda activate capital
           pytest --cov --cov-report=xml --cov-config=tox.ini --cov-branch tests
         env:
           CAPITAL_API_TOKEN: ${{ secrets.CAPITAL_API_TOKEN }}
