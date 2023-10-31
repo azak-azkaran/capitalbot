@@ -54,9 +54,9 @@ jobs:
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
           $CONDA/bin/conda env update --file environment.yaml
-      - name: Switch to conda
-        run: |
-          $CONDA/bin/conda activate capital
+      #- name: Switch to conda
+      #  run: |
+      #    $CONDA/bin/conda activate capital
       - name: Run pytest
         run: pytest --cov --cov-report=xml --cov-config=tox.ini --cov-branch tests
         env:
