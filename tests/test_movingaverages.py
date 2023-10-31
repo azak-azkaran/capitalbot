@@ -91,6 +91,7 @@ def test_calculate_trend():
 
     plt.savefig(filename)
 
+
 def test_ema_backtrader():
     cerebro = bt.Cerebro()
     cerebro.addstrategy(movingaverages.EMAStrategy)
@@ -100,4 +101,3 @@ def test_ema_backtrader():
     # Set our desired cash start
     cerebro.broker.setcash(1000.0)
     cerebro.run()
-

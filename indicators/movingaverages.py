@@ -5,12 +5,13 @@ import backtrader as bt
 
 # Create a Stratey
 class EMAStrategy(bt.Strategy):
-    params = (("period", 20),
-              ("dolog", False),
-              )
+    params = (
+        ("period", 20),
+        ("dolog", False),
+    )
 
     def __init__(self):
-        self.sma = bt.talib.SMA(self.data, timeperiod=self.p.period)
+        self.sma = bt.talib.EMA(self.data, timeperiod=self.p.period)
         # Keep a reference to the "close" line in the data[0] dataseries
         self.dataclose = self.datas[0].close
         # To keep track of pending orders and buy price/commission
@@ -29,19 +30,17 @@ class EMAStrategy(bt.Strategy):
         self.log("Close, %.2f" % self.dataclose[0])
 
         ## Check if we are in the market
-        #if not self.position:
+        # if not self.position:
         # Not yet ... we MIGHT BUY if ...
         if self.data.close[0] > self.sma[0]:
             # BUY, BUY, BUY!!! (with default parameters)
             self.log("BUY CREATE, %.2f" % self.dataclose[0])
             self.order = self.buy()
 
-
         if self.data.close[0] < self.sma[0]:
             # SELL, SELL, SELL!!! (with all possible default parameters)
             self.log("SELL CREATE, %.2f" % self.dataclose[0])
             self.order = self.sell()
-
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -63,10 +62,13 @@ class EMAStrategy(bt.Strategy):
 
         # Write down: no pending order
         self.order = None
-    
+
     def stop(self):
-        self.log('(MA Period %2d) Ending Value %.2f' %
-                 (self.params.period, self.broker.getvalue()), doprint=True)
+        self.log(
+            "(MA Period %2d) Ending Value %.2f"
+            % (self.params.period, self.broker.getvalue()),
+            doprint=True,
+        )
 
 
 def _calc(x):
