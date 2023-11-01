@@ -10,10 +10,9 @@ class SuperTrendStrategy(bt.Strategy):
     params = (("period", 7), ("dolog", False), ("multiplier", 3))
 
     def __init__(self):
-        self.st = SuperTrend(
+        self.x = SuperTrend(
             self.data, period=self.p.period, multiplier=self.p.multiplier
         )
-        self.x = SuperTrend(self.data)
         self.dclose = self.datas[0].close
         self.cross = bt.ind.CrossOver(self.dclose, self.x)
         self.dataclose = self.datas[0].close

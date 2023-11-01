@@ -49,7 +49,7 @@ def test_backtest_supertrend():
 
 
 def test_find_optimal_parameter():
-    df = yf.download("AAPL", start="2023-06-05", end="2023-06-09", interval="5m")
+    df = yf.download("AAPL", start="2023-06-05", end="2023-06-09")
     optimal_param = supertrend.find_optimal_parameter(df)
     print(
         f"Best parameter set: ATR Period={optimal_param[0]}, Multiplier={optimal_param[1]}, ROI={optimal_param[2]}"
