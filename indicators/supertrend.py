@@ -5,75 +5,168 @@ import math
 import backtrader as bt
 
 
-class SuperTrendBand(bt.Indicator):
-    """
-    Helper inidcator for Supertrend indicator
-    """
-
-    params = (("period", 7), ("multiplier", 3))
-    lines = ("basic_ub", "basic_lb", "final_ub", "final_lb")
+# Create a Stratey
+class SuperTrendStrategy(bt.Strategy):
+    params = (("period", 7), ("dolog", False), ("multiplier", 3))
 
     def __init__(self):
-        self.atr = bt.indicators.AverageTrueRange(period=self.p.period)
-        self.l.basic_ub = ((self.data.high + self.data.low) / 2) + (
-            self.atr * self.p.multiplier
+        self.st = SuperTrend(
+            self.data, period=self.p.period, multiplier=self.p.multiplier
         )
-        self.l.basic_lb = ((self.data.high + self.data.low) / 2) - (
-            self.atr * self.p.multiplier
-        )
+        self.x = SuperTrend(self.data)
+        self.dclose = self.datas[0].close
+        self.cross = bt.ind.CrossOver(self.dclose, self.x)
+        self.dataclose = self.datas[0].close
+
+        # To keep track of pending orders and buy price/commission
+        self.order = None
+        self.buyprice = None
+        self.buycomm = None
+
+    def log(self, txt, dt=None, doprint=False):
+        """Logging function fot this strategy"""
+        if self.params.dolog or doprint:
+            dt = dt or self.datas[0].datetime.date(0)
+            print(dt.isoformat() + " , " + txt)
+
+    def notify_order(self, order):
+        if order.status in [order.Submitted, order.Accepted]:
+            # Buy/Sell order submitted/accepted to/by broker - Nothing to do
+            return
+
+        # Check if an order has been completed
+        # Attention: broker could reject order if not enough cash
+        if order.status in [order.Completed]:
+            if order.isbuy():
+                self.log(
+                    "BUY EXECUTED, Price: %.2f, Cost: %.2f, Size %.2f"
+                    % (order.executed.price, order.executed.value, order.executed.size)
+                )
+
+                self.buyprice = order.executed.price
+                self.buycomm = order.executed.comm
+            else:  # Sell
+                self.log(
+                    "SELL EXECUTED, Price: %.2f, Cost: %.2f, Size %.2f"
+                    % (order.executed.price, order.executed.value, order.executed.size)
+                )
+            self.bar_executed = len(self)
 
     def next(self):
-        if len(self) - 1 == self.p.period:
-            self.l.final_ub[0] = self.l.basic_ub[0]
-            self.l.final_lb[0] = self.l.basic_lb[0]
-        else:
-            # =IF(OR(basic_ub<final_ub*,close*>final_ub*),basic_ub,final_ub*)
-            if (
-                self.l.basic_ub[0] < self.l.final_ub[-1]
-                or self.data.close[-1] > self.l.final_ub[-1]
-            ):
-                self.l.final_ub[0] = self.l.basic_ub[0]
-            else:
-                self.l.final_ub[0] = self.l.final_ub[-1]
+        # Simply log the closing price of the series from the reference
+        self.log(
+            "Close, %.2f - SuperTrend: %.2f"
+            % (
+                self.dataclose[0],
+                self.x[0],
+            )
+        )
+        pos = self.getposition(self.data)
+        dpos = pos.size
+        if self.cross[0]==1 and dpos <= 0:
+            self.order_target_percent(data=self.data, target=1)
+        elif self.cross[0]==-1 and dpos >= 0:
+            self.order_target_percent(data=self.data, target=-1)
 
-            # =IF(OR(baisc_lb > final_lb *, close * < final_lb *), basic_lb *, final_lb *)
-            if (
-                self.l.basic_lb[0] > self.l.final_lb[-1]
-                or self.data.close[-1] < self.l.final_lb[-1]
-            ):
-                self.l.final_lb[0] = self.l.basic_lb[0]
-            else:
-                self.l.final_lb[0] = self.l.final_lb[-1]
+    def stop(self):
+        self.log(
+            "(SuperTrend Period %2d, Multiplier %2d) Ending Value %.2f"
+            % (self.params.period, self.params.multiplier, self.broker.getvalue()),
+            doprint=True,
+        )
 
 
 class SuperTrend(bt.Indicator):
     """
-    Super Trend indicator
+    SuperTrend Algorithm :
+    BASIC UPPERBAND = (high + low) / 2 + Multiplier * ATR
+    BASIC lowERBAND = (high + low) / 2 - Multiplier * ATR
+
+    FINAL UPPERBAND = IF( (Current BASICUPPERBAND < Previous FINAL UPPERBAND) or (Previous close > Previous FINAL UPPERBAND))
+        THEN (Current BASIC UPPERBAND) ELSE Previous FINALUPPERBAND)
+
+    FINAL lowERBAND = IF( (Current BASIC lowERBAND > Previous FINAL lowERBAND) or (Previous close < Previous FINAL lowERBAND))
+        THEN (Current BASIC lowERBAND) ELSE Previous FINAL lowERBAND)
+    SUPERTREND = IF((Previous SUPERTREND = Previous FINAL UPPERBAND) and (Current close <= Current FINAL UPPERBAND))
+        THEN Current FINAL UPPERBAND
+    ELSE
+        IF((Previous SUPERTREND = Previous FINAL UPPERBAND) and (Current close > Current FINAL UPPERBAND))
+            THEN Current FINAL lowERBAND
+        ELSE
+            IF((Previous SUPERTREND = Previous FINAL lowERBAND) and (Current close >= Current FINAL lowERBAND))
+                THEN Current FINAL lowERBAND
+            ELSE
+                IF((Previous SUPERTREND = Previous FINAL lowERBAND) and (Current close < Current FINAL lowERBAND))
+                    THEN Current FINAL UPPERBAND
     """
 
-    params = (("period", 7), ("multiplier", 3))
-    lines = ("super_trend",)
+    lines = ("super_trend","f_lowerband", "f_upperband")
+    params = (
+        ("period", 7),
+        ("multiplier", 3),
+    )
+    plotlines = dict(super_trend=dict(_name="ST", color="blue", alpha=0),
+            f_lowerband=dict(_name="f_lowerband", color="green", alpha=1),
+            f_upperband=dict(_name="f_lowerband", color="red", alpha=1),
+                     )
+
     plotinfo = dict(subplot=False)
 
     def __init__(self):
-        self.stb = SuperTrendBand(period=self.p.period, multiplier=self.p.multiplier)
+        self.st = [0]
+        self.finalupband = [0]
+        self.finallowband = [0]
+        self.addminperiod(self.p.period)
+        atr = bt.ind.ATR(self.data, period=self.p.period)
+        self.upperband = (self.data.high + self.data.low) / 2 + self.p.multiplier * atr
+        self.lowerband = (self.data.high + self.data.low) / 2 - self.p.multiplier * atr
 
     def next(self):
-        if len(self) - 1 == self.p.period:
-            self.l.super_trend[0] = self.stb.final_ub[0]
-            return
+        pre_upband = self.finalupband[0]
+        pre_lowband = self.finallowband[0]
 
-        if self.l.super_trend[-1] == self.stb.final_ub[-1]:
-            if self.data.close[0] <= self.stb.final_ub[0]:
-                self.l.super_trend[0] = self.stb.final_ub[0]
-            else:
-                self.l.super_trend[0] = self.stb.final_lb[0]
+        if (
+            self.upperband[0] < self.finalupband[-1]
+            or self.data.close[-1] > self.finalupband[-1]
+        ):
+            self.finalupband[0] = self.upperband[0]
 
-        if self.l.super_trend[-1] == self.stb.final_lb[-1]:
-            if self.data.close[0] >= self.stb.final_lb[0]:
-                self.l.super_trend[0] = self.stb.final_lb[0]
-            else:
-                self.l.super_trend[0] = self.stb.final_ub[0]
+        else:
+            self.finalupband[0] = self.finalupband[-1]
+
+        if (
+            self.lowerband[0] > self.finallowband[-1]
+            or self.data.close[-1] < self.finallowband[-1]
+        ):
+            self.finallowband[0] = self.lowerband[0]
+
+        else:
+            self.finallowband[0] = self.finallowband[-1]
+
+        if self.data.close[0] <= self.finalupband[0] and ((self.st[-1] == pre_upband)):
+            self.st[0] = self.finalupband[0]
+            self.lines.super_trend[0] = self.finalupband[0]
+            self.lines.f_upperband[0] = self.finalupband[0]
+
+        elif (self.st[-1] == pre_upband) and (self.data.close[0] > self.finalupband[0]):
+            self.st[0] = self.finallowband[0]
+            self.lines.super_trend[0] = self.finallowband[0]
+            self.lines.f_lowerband[0] = self.finallowband[0]
+
+        elif (self.st[-1] == pre_lowband) and (
+            self.data.close[0] >= self.finallowband[0]
+        ):
+            self.st[0] = self.finallowband[0]
+            self.lines.super_trend[0] = self.finallowband[0]
+            self.lines.f_lowerband[0] = self.finallowband[0]
+
+        elif (self.st[-1] == pre_lowband) and (
+            self.data.close[0] < self.finallowband[0]
+        ):
+            self.st[0] = self.finalupband[0]
+            self.lines.super_trend[0] = self.st[0]
+            #self.lines.f_upperband[0] = self.st[0]
+
 
 
 def supertrend(df, atr_period, multiplier):
@@ -150,8 +243,11 @@ def backtest_supertrend(df, investment, debug=False, commission=5):
     entry = []
     exit = []
 
+    df.to_csv("test.csv")
+
     for i in range(2, len(df)):
         # if not in position & price is on uptrend -> buy
+
         if not in_position and is_uptrend.iloc[i]:
             share = math.floor(equity / close.iloc[i])
             # if debug: print(f'EQUITY: {equity} close price: {close[i]}')
@@ -180,7 +276,7 @@ def backtest_supertrend(df, investment, debug=False, commission=5):
     roi = round(earning / investment * 100, 2)
     if debug:
         print(
-            f"Earning from investing ${investment} is ${round(earning,2)} (ROI = {roi} \%)"
+            f"Earning from investing ${investment} is ${round(earning,2)} (ROI = {roi}%)"
         )
     return entry, exit, roi
 
