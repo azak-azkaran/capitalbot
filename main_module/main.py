@@ -7,6 +7,7 @@ import os
 import time
 from main_module import capital
 import pandas as pd
+import backtrader as bt
 
 
 from datetime import datetime, timedelta
@@ -133,24 +134,31 @@ def mode_supertrend(df, args, debug=False):
     if debug:
         print(df)
 
-    supertrend_frame = supertrend.supertrend(df, args.atr_period, args.atr_multiplier)
+    cerebro = bt.Cerebro()
+    strats = cerebro.addstrategy(supertrend.SuperTrendStrategy, period=args.atr_period, multiplier=args.atr_multiplier)
+    #supertrend_frame = supertrend.supertrend(df, args.atr_period, args.atr_multiplier)
+    data = bt.feeds.PandasData(dataname=df)
+    # Add the Data Feed to Cerebro
+    cerebro.adddata(data)
+    re = cerebro.run()
+    cerebro.plot()
 
-    if debug:
-        print(supertrend_frame)
-    df = df.join(supertrend_frame)
+    #if debug:
+    #    print(supertrend_frame)
+    #df = df.join(supertrend_frame)
 
-    if args.filename is None:
-        filename = (
-            args.symbol
-            + "_-_"
-            + args.dl_start.strftime(capital.CAPITAL_STRING_FORMAT)
-            + "_-_"
-            + args.dl_end.strftime(capital.CAPITAL_STRING_FORMAT)
-            + ".png"
-        )
-    else:
-        filename = args.filename
-    plot_frame(df, filename)
+    #if args.filename is None:
+    #    filename = (
+    #        args.symbol
+    #        + "_-_"
+    #        + args.dl_start.strftime(capital.CAPITAL_STRING_FORMAT)
+    #        + "_-_"
+    #        + args.dl_end.strftime(capital.CAPITAL_STRING_FORMAT)
+    #        + ".png"
+    #    )
+    #else:
+    #    filename = args.filename
+    #plot_frame(df, filename)
 
 
 def main(argv):
