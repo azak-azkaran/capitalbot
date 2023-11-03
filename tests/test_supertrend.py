@@ -65,4 +65,4 @@ def test_supertrend_backtrader():
     # Set our desired cash start
     cerebro.broker.setcash(10000.0)
     cerebro.run()
-    #cerebro.plot()
+    # cerebro.plot()

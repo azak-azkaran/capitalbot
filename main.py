@@ -8,7 +8,7 @@ from indicators import movingaverages
 from indicators import supertrend
 import numpy as np
 
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #    df = yf.download("AAPL", start="2020-01-01", end="2023-06-09")
 #    optimal_param = supertrend.find_optimal_parameter(df.copy())
 #
@@ -48,4 +48,4 @@ import numpy as np
 #    #cerebro.plot()
 
 if __name__ == "__main__":
-   sys.exit(main.main(sys.argv[1:]))
+    sys.exit(main.main(sys.argv[1:]))

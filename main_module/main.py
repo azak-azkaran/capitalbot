@@ -2,109 +2,16 @@ import argparse
 import yfinance as yf
 from indicators import supertrend
 import matplotlib.pyplot as plt
-import yaml
 import os
 import time
 from main_module import capital
 import pandas as pd
 import backtrader as bt
+from main_module import config
 
-
-from datetime import datetime, timedelta
 
 FINAL_UPPER = "Final Upperband"
 FINAL_LOWER = "Final Lowerband"
-
-
-class Config:
-    symbol = ""
-    atr_period = 0
-    atr_multiplier = 0
-    dl_period = ""
-    dl_interval = ""
-    dl_start = None
-    dl_end = None
-    capital_api_key = ""
-    capital_password = ""
-    capital_identifier = ""
-    capital_security_token = ""
-    capital_cst_token = ""
-    filename = None
-    mode = None
-    demo = True
-
-    def __str__(self) -> str:
-        return "API KEY: " + self.capital_api_key + " " + self.capital_password
-
-
-def parse_period(period):
-    # 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y
-    days = 0
-    months = 0
-    years = 0
-    if period.endswith("d"):
-        days = int(period.split("d")[0])
-    elif period.endswith("mo"):
-        months = int(period.split("mo")[0])
-    elif period.endswith("y"):
-        years = int(period.split("y")[0])
-    else:
-        raise ValueError(
-            "Period needs to end with: d for days, mo for months and y for years"
-        )
-
-    date = datetime.now()
-    start_date = date - timedelta(days=days)
-
-    if months > 0:
-        start_date = start_date.month - months
-
-    if years > 0:
-        start_date = start_date.year - years
-
-    end_date = date - timedelta(hours=2)
-    return start_date, end_date
-
-
-def parse_args(filename):
-    with open(filename, "r") as file:
-        conf = yaml.safe_load(file)
-
-        args = Config()
-        args.symbol = conf.get("symbol")
-        if conf.get("atr") == None:
-            raise ValueError("atr must be specified")
-
-        args.atr_period = conf.get("atr").get("period")
-        if args.atr_period == None:
-            raise ValueError("atr.period must be specified")
-        args.atr_multiplier = conf.get("atr").get("multiplier")
-        if args.atr_multiplier == None:
-            raise ValueError("atr.multiplier must be specified")
-
-        if conf.get("capital") != None:
-            args.capital_api_key = conf.get("capital").get("api_key")
-            args.capital_password = conf.get("capital").get("password")
-            args.capital_identifier = conf.get("capital").get("identifier")
-
-        if conf.get("period") != None:
-            start, end = parse_period(conf.get("period"))
-            args.dl_start = start
-            args.dl_end = end
-
-        if conf.get("start") != None:
-            args.dl_start = conf.get("start")
-
-        if conf.get("end") != None:
-            args.dl_end = conf.get("end")
-
-        if conf.get("filename") != None:
-            args.filename = conf.get("filename")
-
-        if conf.get("mode") != None:
-            args.mode = conf.get("mode")
-
-    return args
 
 
 def save(symbol, df, json=False):
@@ -131,41 +38,68 @@ def mode_backtest(df, args):
 
 
 def mode_supertrend(df, args, debug=False):
+    if df.empty is True:
+        raise ValueError("No values in DataFrame for backtesting")
+    if df.index.size <= args.atr_period:
+        raise ValueError("Not enough values in DataFrame for backtesting")
     if debug:
+        print("Starting Mode Supertrend with: " + str(args))
         print(df)
 
     cerebro = bt.Cerebro()
-    strats = cerebro.addstrategy(supertrend.SuperTrendStrategy, period=args.atr_period, multiplier=args.atr_multiplier)
-    #supertrend_frame = supertrend.supertrend(df, args.atr_period, args.atr_multiplier)
+    strats = cerebro.addstrategy(
+        supertrend.SuperTrendStrategy,
+        period=args.atr_period,
+        multiplier=args.atr_multiplier,
+    )
+    # supertrend_frame = supertrend.supertrend(df, args.atr_period, args.atr_multiplier)
     data = bt.feeds.PandasData(dataname=df)
     # Add the Data Feed to Cerebro
     cerebro.adddata(data)
     re = cerebro.run()
-    cerebro.plot()
+    pl = cerebro.plot()
 
-    #if debug:
-    #    print(supertrend_frame)
-    #df = df.join(supertrend_frame)
 
-    #if args.filename is None:
-    #    filename = (
-    #        args.symbol
-    #        + "_-_"
-    #        + args.dl_start.strftime(capital.CAPITAL_STRING_FORMAT)
-    #        + "_-_"
-    #        + args.dl_end.strftime(capital.CAPITAL_STRING_FORMAT)
-    #        + ".png"
-    #    )
-    #else:
-    #    filename = args.filename
-    #plot_frame(df, filename)
+def _save_backtrader_fig(fig, args, index=0):
+    if args.filename is None:
+        filename = (
+            args.symbol
+            + "_-_"
+            + args.dl_start.strftime(capital.CAPITAL_STRING_FORMAT)
+            + "_-_"
+            + args.dl_end.strftime(capital.CAPITAL_STRING_FORMAT)
+            + "_-_"
+            + str(index)
+            + ".png"
+        )
+    else:
+        filename = args.filename
+    fig.savefig(filename)
+
+
+def save_backtrader_plot(pl, args):
+    if type(pl) is list:
+        index = 1
+        for entry in pl:
+            if type(entry) is list:
+                for i in entry:
+                    _save_backtrader_fig(i, args, index)
+                    index += 1
+            else:
+                _save_backtrader_fig(i, args, index)
+    else:
+        _save_backtrader_fig(
+            i,
+            args,
+            index,
+        )
 
 
 def main(argv):
     """
     main
     """
-    args = parse_args(argv[0])
+    args = config.Config(argv[0])
     if args.capital_api_key != "":
         print("Loading from capital")
         print(args)
@@ -173,10 +107,11 @@ def main(argv):
 
     else:
         print("Loading from yahoo")
-        df = download(args.symbol, "5d", "1m")
+        # TODO: change this to be dynamic
+        df = download(args.symbol, "5m", start_date=args.start_date, end_date=args.end_date)
 
     if args.mode == "supertrend" or args.mode == "st":
-        return mode_supertrend(df, args)
+        return mode_supertrend(df, args, debug=args.debug)
     elif args.mode == "constant_supertrend" or args.mode == "c_st":
         return mode_constant_supertrend(args)
     elif args.mode == "backtest" or args.mode == "backtesting" or args.mode == "bt":

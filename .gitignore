@@ -7,3 +7,5 @@ config.yaml
 config.yml
 .tox
 *.png
+.DS_Store
+.ipynb_checkpoints

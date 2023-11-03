@@ -5,3 +5,4 @@ atr:
 period: 5d
 filename: "foo.png"
 mode: "supertrend"
+debug: True

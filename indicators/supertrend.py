@@ -62,9 +62,9 @@ class SuperTrendStrategy(bt.Strategy):
         )
         pos = self.getposition(self.data)
         dpos = pos.size
-        if self.cross[0]==1 and dpos <= 0:
+        if self.cross[0] == 1 and dpos <= 0:
             self.order_target_percent(data=self.data, target=1)
-        elif self.cross[0]==-1 and dpos >= 0:
+        elif self.cross[0] == -1 and dpos >= 0:
             self.order_target_percent(data=self.data, target=-1)
 
     def stop(self):
@@ -99,15 +99,16 @@ class SuperTrend(bt.Indicator):
                     THEN Current FINAL UPPERBAND
     """
 
-    lines = ("super_trend","f_lowerband", "f_upperband")
+    lines = ("super_trend", "f_lowerband", "f_upperband")
     params = (
         ("period", 7),
         ("multiplier", 3),
     )
-    plotlines = dict(super_trend=dict(_name="ST", color="blue", alpha=0),
-            f_lowerband=dict(_name="f_lowerband", color="green", alpha=1),
-            f_upperband=dict(_name="f_lowerband", color="red", alpha=1),
-                     )
+    plotlines = dict(
+        super_trend=dict(_name="ST", color="blue", alpha=0),
+        f_lowerband=dict(_name="f_lowerband", color="green", alpha=1),
+        f_upperband=dict(_name="f_lowerband", color="red", alpha=1),
+    )
 
     plotinfo = dict(subplot=False)
 
@@ -164,8 +165,7 @@ class SuperTrend(bt.Indicator):
         ):
             self.st[0] = self.finalupband[0]
             self.lines.super_trend[0] = self.st[0]
-            #self.lines.f_upperband[0] = self.st[0]
-
+            # self.lines.f_upperband[0] = self.st[0]
 
 
 def supertrend(df, atr_period, multiplier):
@@ -241,8 +241,6 @@ def backtest_supertrend(df, investment, debug=False, commission=5):
     share = 0
     entry = []
     exit = []
-
-    df.to_csv("test.csv")
 
     for i in range(2, len(df)):
         # if not in position & price is on uptrend -> buy

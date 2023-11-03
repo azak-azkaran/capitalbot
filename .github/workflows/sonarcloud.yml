@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      
+
       # See: https://github.com/marketplace/actions/setup-miniconda
       - name: Setup miniconda
         uses: conda-incubator/setup-miniconda@v2
@@ -85,8 +85,8 @@ jobs:
             -Dsonar.organization=azak-azkaran-github
             -Dsonar.python.coverage.reportPaths=coverage.xml
             -Dsonar.python.version=3
-            -Dsonar.test.exclusions=test_*.py 
-            -Dsonar.test=tests/ 
+            -Dsonar.test.exclusions=test_*.py
+            -Dsonar.test=tests/
             # Comma-separated paths to directories containing main source files.
             #-Dsonar.sources= # optional, default is project base directory
             # When you need the analysis to take place in a directory other than the one from which it was launched
