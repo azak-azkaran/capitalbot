@@ -7,6 +7,7 @@ import time
 from main_module import capital
 import pandas as pd
 import backtrader as bt
+from backtrader import plot as btplot
 from main_module import config
 
 
@@ -57,7 +58,7 @@ def mode_supertrend(df, args, debug=False):
     # Add the Data Feed to Cerebro
     cerebro.adddata(data)
     re = cerebro.run()
-    pl = cerebro.plot()
+    pl = cerebro.plot(iplot=False, use="AGG")
     save_backtrader_plot(pl, args, debug=args.debug)
 
 
@@ -75,6 +76,7 @@ def _save_backtrader_fig(fig, args, index=0, debug=False):
         )
     else:
         filename = args.filename
+    filename = "plots/" + filename
     if debug:
         print("saving to file:" + filename) 
     fig.savefig(filename)
