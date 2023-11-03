@@ -58,9 +58,10 @@ def mode_supertrend(df, args, debug=False):
     cerebro.adddata(data)
     re = cerebro.run()
     pl = cerebro.plot()
+    save_backtrader_plot(pl, args, debug=args.debug)
 
 
-def _save_backtrader_fig(fig, args, index=0):
+def _save_backtrader_fig(fig, args, index=0, debug=False):
     if args.filename is None:
         filename = (
             args.symbol
@@ -74,24 +75,27 @@ def _save_backtrader_fig(fig, args, index=0):
         )
     else:
         filename = args.filename
+    if debug:
+        print("saving to file:" + filename) 
     fig.savefig(filename)
 
 
-def save_backtrader_plot(pl, args):
+def save_backtrader_plot(pl, args, debug=False):
     if type(pl) is list:
         index = 1
         for entry in pl:
             if type(entry) is list:
                 for i in entry:
-                    _save_backtrader_fig(i, args, index)
+                    _save_backtrader_fig(i, args, index, debug)
                     index += 1
             else:
-                _save_backtrader_fig(i, args, index)
+                _save_backtrader_fig(i, args, index, debug)
     else:
         _save_backtrader_fig(
             i,
             args,
             index,
+            debug,
         )
 
 

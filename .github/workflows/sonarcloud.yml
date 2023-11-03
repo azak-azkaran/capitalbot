@@ -66,7 +66,7 @@ jobs:
       - name: Create test coverage report
         run: |
           conda activate capital
-          pytest --cov --cov-report=xml --cov-config=tox.ini --cov-branch tests
+          pytest --cov --cov-report=xml --cov-branch tests
         env:
           CAPITAL_API_TOKEN: ${{ secrets.CAPITAL_API_TOKEN }}
           CAPITAL_PASSWORD: ${{ secrets.CAPITAL_PASSWORD }}
