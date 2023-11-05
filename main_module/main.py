@@ -32,6 +32,9 @@ def download(symbol, interval, period="max", start_date=None, end_date=None):
 
 
 def mode_backtest(df, args):
+    cerebro = bt.Cerebro()
+    strats = cerebro.optstrategy(supertrend.SuperTrendStrategy, period=range(6, 15), multiplier=range(0,7))
+
     optimal_param = supertrend.find_optimal_parameter(df)
     print(
         f"Best parameter {args.symbol} set: ATR Period={optimal_param[0]}, Multiplier={optimal_param[1]}, ROI={optimal_param[2]}%"
