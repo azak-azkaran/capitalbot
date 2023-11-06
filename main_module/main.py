@@ -1,4 +1,3 @@
-import argparse
 import yfinance as yf
 from indicators import supertrend
 import matplotlib.pyplot as plt
@@ -41,7 +40,7 @@ def mode_backtest(df, args):
     )
 
 
-def mode_supertrend(df, args, debug=False):
+def mode_supertrend(df, args, debug=False, plot=True, ):
     if df.empty is True:
         raise ValueError("No values in DataFrame for backtesting")
     if df.index.size <= args.atr_period:
@@ -61,8 +60,11 @@ def mode_supertrend(df, args, debug=False):
     # Add the Data Feed to Cerebro
     cerebro.adddata(data)
     re = cerebro.run()
-    pl = cerebro.plot(iplot=False, use="AGG")
-    save_backtrader_plot(pl, args, debug=args.debug)
+    if plot:
+        pl = cerebro.plot(iplot=False, use="AGG")
+        save_backtrader_plot(pl, args, debug=args.debug)
+        return re, pl
+    return re, None
 
 
 def _save_backtrader_fig(fig, args, index=0, debug=False):
@@ -121,19 +123,17 @@ def main(argv):
 
     if args.mode == "supertrend" or args.mode == "st":
         return mode_supertrend(df, args, debug=args.debug)
-    elif args.mode == "constant_supertrend" or args.mode == "c_st":
-        return mode_constant_supertrend(args)
+    elif args.mode == "console" or args.mode == "it":
+        return mode_console(args)
     elif args.mode == "backtest" or args.mode == "backtesting" or args.mode == "bt":
         return mode_backtest(df, args)
     else:
         raise ValueError("No mode specified")
 
 
-def mode_constant_supertrend(args):
-    while True:
-        df = capitalize(args)
-        mode_supertrend(df, args)
-        time.sleep(60)
+def mode_console(args):
+    #while True:
+    print("TODO: not yet implemented")
     print("dying")
 
 
