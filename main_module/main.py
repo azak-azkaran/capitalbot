@@ -94,10 +94,10 @@ def save_backtrader_plot(pl, args, debug=False):
                     _save_backtrader_fig(i, args, index, debug)
                     index += 1
             else:
-                _save_backtrader_fig(i, args, index, debug)
+                _save_backtrader_fig(entry, args, index, debug)
     else:
         _save_backtrader_fig(
-            i,
+            pl,
             args,
             index,
             debug,
