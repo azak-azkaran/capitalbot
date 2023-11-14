@@ -119,7 +119,7 @@ def main(argv):
     else:
         print("Loading from yahoo")
         # TODO: change this to be dynamic
-        df = download(args.symbol, "5m", start_date=args.start_date, end_date=args.end_date)
+        df = download(args.symbol, "5m", start_date=args.dl_start, end_date=args.dl_end)
 
     if args.mode == "supertrend" or args.mode == "st":
         return mode_supertrend(df, args, debug=args.debug)

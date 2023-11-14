@@ -17,13 +17,11 @@ class Config:
     filename = None
     mode = None
     demo = True
-    start_date = None
-    end_date = None
     debug = False
 
     def __init__(self, filename=None):
-        self.start_date = datetime.now()
-        self.end_date = datetime.now()
+        self.dl_start = datetime.now()
+        self.dl_end = datetime.now()
         if filename is not None:
             self.parse_args(filename)
 
@@ -50,16 +48,16 @@ class Config:
             )
 
         date = datetime.now()
-        self.start_date = date - timedelta(days=days)
+        self.dl_start = date - timedelta(days=days)
 
         if months > 0:
-            self.start_date = self.start_date.month - months
+            self.dl_start = self.dl_start.month - months
 
         if years > 0:
-            self.start_date = self.start_date.year - years
+            self.dl_start = self.dl_start.year - years
 
-        self.end_date = date - timedelta(hours=2)
-        return self.start_date, self.end_date
+        self.dl_end = date - timedelta(hours=2)
+        return self.dl_start, self.dl_end
 
 
     def parse_args(self, filename):

@@ -12,6 +12,7 @@ class Console:
         "1": self._supertrend,
         "2": self._backtesting,
     }
+
     def __init__(self) -> None:
         pass
 
@@ -19,7 +20,7 @@ class Console:
         conf = config
         self._show_main_menu(config)
         data = input("Please enter the message:\n")
-        switch()
+        
         if 'Exit' == data:
             return False
         print(f'Processing Message from input() *****{data}*****')
