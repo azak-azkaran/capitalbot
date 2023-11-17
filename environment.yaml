@@ -1,6 +1,7 @@
 name: capital
 channels:
   - conda-forge
+  - plotly
 dependencies:
   - anyio=4.0.0
   - black=23.10.1
@@ -18,5 +19,12 @@ dependencies:
   - requests=2.31.0
   - ta-lib=0.4.28
   - yfinance=0.2.31
+  - plotly=5.12.0
+  - ipywidgets>=7.6
+  - jupyterlab>=3
+  - jupyter-dash
+  - tenacity
+  - tabulate
   - pip:
       - backtrader==1.9.78.123
+      - vectorbt==0.25.5
