@@ -3,6 +3,8 @@ import numpy as np
 from datetime import datetime
 import math
 import backtrader as bt
+import talib
+from numba import njit
 
 
 # Create a Stratey
@@ -167,136 +169,153 @@ class SuperTrend(bt.Indicator):
             self.lines.super_trend[0] = self.st[0]
             # self.lines.f_upperband[0] = self.st[0]
 
+@njit
+def get_basic_bands(med_price, atr, multiplier):
+    matr = multiplier * atr
+    upper = med_price + matr
+    lower = med_price - matr
+    return upper, lower
+
+@njit
+def get_final_bands_nb(close, upper, lower):
+    trend = np.full(close.shape, np.nan)
+    dir_ = np.full(close.shape, 1)
+    long = np.full(close.shape, np.nan)
+    short = np.full(close.shape, np.nan)
+
+    for i in range(1, close.shape[0]):
+        if close[i] > upper[i - 1]:
+            dir_[i] = 1
+        elif close[i] < lower[i - 1]:
+            dir_[i] = -1
+        else:
+            dir_[i] = dir_[i - 1]
+            if dir_[i] > 0 and lower[i] < lower[i - 1]:
+                lower[i] = lower[i - 1]
+            if dir_[i] < 0 and upper[i] > upper[i - 1]:
+                upper[i] = upper[i - 1]
+
+        if dir_[i] > 0:
+            trend[i] = long[i] = lower[i]
+        else:
+            trend[i] = short[i] = upper[i]
+            
+    return trend, dir_, long, short
+
+def faster_supertrend_talib(high, low, close, period=7, multiplier=3):
+    avg_price = talib.MEDPRICE(high, low)
+    atr = talib.ATR(high, low, close, period)
+    upper, lower = get_basic_bands(avg_price, atr, multiplier)
+    return get_final_bands_nb(close, upper, lower)
+
+def supertrend_opt(high, low, close, period=7, multiplier=3):
+    supert = np.full(close.shape, np.nan)
+    superd = np.full(close.shape, np.nan)
+    superl = np.full(close.shape, np.nan)
+    supers = np.full(close.shape, np.nan)
+    for x in range(close.shape[1]):
+        t, d, l,s = faster_supertrend_talib(high[x], low[x], close[x], period, multiplier)
+        supert[x] = t
+        superd[x] = d 
+        superl[x] = l
+        supers[x] = s
+    
+    return supert, superd, superl, supers
+
+def get_indicator(high, low, close, period=7, multiplier=3):
+    indicator = np.full(close.shape, np.nan)
+    supert, _, superl, supers = faster_supertrend_talib(low=low, high=high, close=close, period=period, multiplier=multiplier)
+    indicator = np.where(supert == supers, False, np.where(supert == superl, True, np.nan))
+    return indicator, superl, supers
 
 def supertrend(df, atr_period, multiplier):
     high = df["High"]
     low = df["Low"]
     close = df["Close"]
 
-    # calculate ATR
-    price_diffs = [high - low, high - close.shift(), close.shift() - low]
-    true_range = pd.concat(price_diffs, axis=1)
-    true_range = true_range.abs().max(axis=1)
-    # default ATR calculation in supertrend indicator
-    atr = true_range.ewm(alpha=1 / atr_period, min_periods=atr_period).mean()
-
-    # HL2 is simply the average of high and low prices
-    hl2 = (high + low) / 2
-    # upperband and lowerband calculation
-    # notice that final bands are set to be equal to the respective bands
-    final_upperband = hl2 + (multiplier * atr)
-    final_lowerband = hl2 - (multiplier * atr)
-
     # initialize Supertrend column to True
-    supertrend = [True] * len(df)
-
-    for i in range(1, len(df.index)):
-        curr, prev = i, i - 1
-
-        # if current close price crosses above upperband
-        if close.iloc[curr] > final_upperband.iloc[prev]:
-            supertrend[curr] = True
-        # if current close price crosses below lowerband
-        elif close.iloc[curr] < final_lowerband.iloc[prev]:
-            supertrend[curr] = False
-        # else, the trend continues
-        else:
-            supertrend[curr] = supertrend[prev]
-
-            # adjustment to the final bands
-            if (
-                supertrend[curr] is True
-                and final_lowerband.iloc[curr] < final_lowerband.iloc[prev]
-            ):
-                final_lowerband.iloc[curr] = final_lowerband.iloc[prev]
-            if (
-                supertrend[curr] is False
-                and final_upperband.iloc[curr] > final_upperband.iloc[prev]
-            ):
-                final_upperband.iloc[curr] = final_upperband.iloc[prev]
-
-        # to remove bands according to the trend direction
-        if supertrend[curr] is True:
-            final_upperband.iloc[curr] = np.nan
-        else:
-            final_lowerband.iloc[curr] = np.nan
+    supert, _, superl, supers = faster_supertrend_talib(low=low.to_numpy(), high=high.to_numpy(), close=close.to_numpy(), period=atr_period, multiplier=multiplier)
+    st = pd.Series(np.where(supert == supers, False, np.where(supert == superl, True, np.nan)), index = close.index)
 
     return pd.DataFrame(
         {
-            "Supertrend": supertrend,
-            "Final Lowerband": final_lowerband,
-            "Final Upperband": final_upperband,
+            "Supertrend": st,
+            "Final Lowerband": superl,
+            "Final Upperband": supers,
         },
         index=df.index,
     )
 
 
-def backtest_supertrend(df, investment, debug=False, commission=5):
-    is_uptrend = df["Supertrend"]
-    close = df["Close"]
+@njit
+def backtest(close, indicator, investment, debug=False, commission=5):
 
+    entry = np.full(close.shape, np.nan)
+    exit = np.full(close.shape, np.nan)
     # initial condition
     in_position = False
     equity = investment
     share = 0
-    entry = []
-    exit = []
 
-    for i in range(2, len(df)):
+    for i in range(1, close.shape[0]):
         # if not in position & price is on uptrend -> buy
 
-        if not in_position and is_uptrend.iloc[i]:
-            share = math.floor(equity / close.iloc[i])
+        if not in_position and indicator[i]:
+            share = math.floor(equity / close[i])
             # if debug: print(f'EQUITY: {equity} close price: {close[i]}')
-            equity -= share * close.iloc[i]
-            entry.append((i, close.iloc[i]))
+            equity -= share * close[i]
+            entry[i] =close[i]
             in_position = True
-            if debug:
-                print(
-                    f'Buy {share} shares at {round(close.iloc[i],2)} on {df.index[i].strftime("%Y/%m/%d")}'
-                )
+            #if debug:
+            #    print(
+            #        f'Buy {share} shares at {round(close[i],2)} on {df.index[i].strftime("%Y/%m/%d")}'
+            #    )
         # if in position & price is not on uptrend -> sell
-        elif in_position and not is_uptrend.iloc[i]:
-            equity += share * close.iloc[i] - commission
+        elif in_position and not indicator[i]:
+            equity += share * close[i] - commission
             # if debug: print(f'EQUITY: {equity} close price: {close[i]}')
-            exit.append((i, close.iloc[i]))
+            exit[i] = close[i]
             in_position = False
-            if debug:
-                print(
-                    f'Sell at {round(close.iloc[i],2)} on {df.index[i].strftime("%Y/%m/%d")}'
-                )
+            #if debug:
+            #    print(
+            #        f'Sell at {round(close.iloc[i],2)} on {df.index[i].strftime("%Y/%m/%d")}'
+            #    )
     # if still in position -> sell all share
     if in_position:
-        equity += share * close.iloc[i] - commission
+        equity += share * close[i] - commission
 
     earning = equity - investment
     roi = round(earning / investment * 100, 2)
-    if debug:
-        print(
-            f"Earning from investing ${investment} is ${round(earning,2)} (ROI = {roi}%)"
-        )
-    return entry, exit, roi
+    #if debug:
+    #    print(
+    #        f"Earning from investing ${investment} is ${round(earning,2)} (ROI = {roi}%)"
+    #    )
+    return entry, exit, roi, earning
 
 
 # BONUS: parameter optimization
 def find_optimal_parameter(
-    df,
+    high, low, close,
     investment=10000,
     atr_period=[6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     atr_multiplier=[0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0],
 ):
-    roi_list = []
+    roi_list = np.zeros(( len(atr_multiplier) * len(atr_period),3 ))
 
     # for each period and multiplier, perform backtest
+    i = 0
     for period, multiplier in [(x, y) for x in atr_period for y in atr_multiplier]:
-        new_df = df
-        st = supertrend(df, period, multiplier)
-        new_df = df.join(st)
-        new_df = new_df[period:]
-        _, _, roi = backtest_supertrend(new_df, investment)
-        roi_list.append((period, multiplier, roi))
+        roi_list[i][0] = period
+        roi_list[i][1] = multiplier
+        indicator, _, _ = get_indicator(close=close, high=high, low=low, period=period, multiplier=multiplier)
+        _, _, roi,_ = backtest(close=close, indicator=indicator, investment=investment)
+        #roi_list.append((period, multiplier, roi))
+        roi_list[i][2] = roi
+        i+=1
 
-    print(pd.DataFrame(roi_list, columns=["ATR_period", "Multiplier", "ROI"]))
 
+    #print(pd.DataFrame(roi_list, columns=["ATR_period", "Multiplier", "ROI"]))
+
+    return roi_list
     # return the best parameter set
-    return max(roi_list, key=lambda x: x[2])
+    #return max(roi_list, key=lambda x: x[2])

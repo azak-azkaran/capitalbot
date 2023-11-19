@@ -1,4 +1,5 @@
 import yfinance as yf
+import numpy as np
 from indicators import supertrend
 import matplotlib.pyplot as plt
 import os
@@ -34,7 +35,13 @@ def mode_backtest(df, args):
     cerebro = bt.Cerebro()
     strats = cerebro.optstrategy(supertrend.SuperTrendStrategy, period=range(6, 15), multiplier=range(0,7))
 
-    optimal_param = supertrend.find_optimal_parameter(df)
+    high = df["High"].to_numpy()
+    low = df["Low"].to_numpy()
+    close = df["Close"].to_numpy()
+    roi_list = supertrend.find_optimal_parameter(high=high, close=close, low=low)
+
+    optimal_param = max(roi_list, key=lambda x: x[2])
+    #optimal_param = supertrend.find_optimal_parameter(df)
     print(
         f"Best parameter {args.symbol} set: ATR Period={optimal_param[0]}, Multiplier={optimal_param[1]}, ROI={optimal_param[2]}%"
     )
@@ -49,21 +56,15 @@ def mode_supertrend(df, args, debug=False, plot=True, ):
         print("Starting Mode Supertrend with: " + str(args))
         print(df)
 
-    cerebro = bt.Cerebro()
-    strats = cerebro.addstrategy(
-        supertrend.SuperTrendStrategy,
-        period=args.atr_period,
-        multiplier=args.atr_multiplier,
-    )
-    # supertrend_frame = supertrend.supertrend(df, args.atr_period, args.atr_multiplier)
-    data = bt.feeds.PandasData(dataname=df)
-    # Add the Data Feed to Cerebro
-    cerebro.adddata(data)
-    re = cerebro.run()
+    st, st_lowerband, st_upperband  = supertrend.get_indicator(df, args.atr_period, args.atr_multiplier)
+    entry, exit, roi, earning = supertrend.backtest(df["Close"].to_numpy(), st["Supertrend"].to_numpy(), investment=args.investment, debug=False, commission=args.comission)
+    
+    df[FINAL_LOWER] = st_lowerband
+    df[FINAL_UPPER] = st_upperband
+    print(f"Earning from investing ${args.investment} is ${round(earning,2)} (ROI = {roi}%)")
+
     if plot:
-        pl = cerebro.plot(iplot=False, use="AGG")
-        save_backtrader_plot(pl, args, debug=args.debug)
-        return re, pl
+        plot_frame(df, entry=entry, exit=exit, filename=args.filename)
     return re, None
 
 
@@ -151,11 +152,11 @@ def plot_frame(df, filename, entry=None, exit=None):
     if FINAL_UPPER in df.columns:
         plt.plot(df[FINAL_UPPER], "r", label=FINAL_UPPER)
 
-    if entry != None:
-        for e in entry:
+    if type( entry ) == pd.DataFrame or type( entry ) == pd.Series or type(entry) == np.ndarray:
+        for e in range(entry.shape[0]):
             plt.plot(
-                df.index[e[0]],
-                e[1],
+                df.index[e],
+                entry.iloc[e],
                 marker="^",
                 color="green",
                 markersize=12,
@@ -163,11 +164,11 @@ def plot_frame(df, filename, entry=None, exit=None):
                 label="Entry",
             )
 
-    if exit != None:
-        for e in exit:
+    if type( exit ) == pd.DataFrame or type( exit ) == pd.Series or type(exit) == np.ndarray:
+        for e in range(exit.shape[0]):
             plt.plot(
-                df.index[e[0]],
-                e[1],
+                df.index[e],
+                exit.iloc[e],
                 marker="v",
                 color="red",
                 markersize=12,

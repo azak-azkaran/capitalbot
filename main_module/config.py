@@ -18,6 +18,8 @@ class Config:
     mode = None
     demo = True
     debug = False
+    commission = 0
+    investment = 10000
 
     def __init__(self, filename=None):
         self.dl_start = datetime.now()
@@ -99,3 +101,9 @@ class Config:
             
             if conf.get("debug") != None:
                 self.debug = conf.get("debug")
+            
+            if conf.get("commission") != None:
+
+                self.commission = conf.get("commission")
+            if conf.get("investment") != None:
+                self.investment = conf.get("investment")
