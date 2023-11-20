@@ -14,6 +14,7 @@ class Config:
     capital_identifier = ""
     capital_security_token = ""
     capital_cst_token = ""
+    openai_api_key = ""
     filename = None
     mode = None
     demo = True
@@ -107,3 +108,5 @@ class Config:
                 self.commission = conf.get("commission")
             if conf.get("investment") != None:
                 self.investment = conf.get("investment")
+            if conf.get("openai") != None:
+                self.openai_api_key = conf.get("openai").get("api_key")
