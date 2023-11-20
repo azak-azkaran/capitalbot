@@ -2,8 +2,6 @@ import http.client
 import numpy as np
 import pandas as pd
 import yfinance as yf
-import backtrader as bt
-import vectorbt as vbt
 import os
 from indicators import supertrend
 from datetime import datetime, timedelta
@@ -77,59 +75,3 @@ def test_find_optimal_parameter():
     print(
         f"Best parameter set: ATR Period={optimal_param[0]}, Multiplier={optimal_param[1]}, ROI={optimal_param[2]}"
     )
-
-
-def test_backtest_supertrend_backtrader():
-    cerebro = bt.Cerebro()
-    cerebro.addstrategy(supertrend.SuperTrendStrategy)
-    data = bt.feeds.PandasData(dataname=yf.download("AAPL", start="2020-01-01", end="2023-11-09", interval='1D'))
-    # Add the Data Feed to Cerebro
-    cerebro.adddata(data)
-    # Set our desired cash start
-    cerebro.broker.setcash(10000.0)
-    re = cerebro.run()
-    #cerebro.plot()
-
-#def test_backtest_supertrend_vectorbt():
-#    df = yf.download("AAPL", start="2020-01-01", end="2023-11-09", interval='1D')
-#    high = df["High"]
-#    low = df["Low"]
-#    close = df["Close"]
-#    period = 7
-#    multiplier = 3
-#    try:
-#        periods = np.arange(4, 20)
-#        multipliers = np.arange(20, 41) / 10
-#        supert, superd, superl, supers = supertrend.faster_supertrend_talib(low=low.to_numpy(), high=high.to_numpy(), close=close.to_numpy(), period=period, multiplier=multiplier)
-#
-#        superl = pd.DataFrame({ "Final Lowerband": superl }, index=df.index)
-#        supers = pd.DataFrame({ "Final upperband": supers }, index=df.index)
-#        entries = (superl.isnull()).vbt.signals.fshift()
-#        exits = (supers.isnull()).vbt.signals.fshift()
-#        pf = vbt.Portfolio.from_signals(
-#            close=close, 
-#            entries=entries, 
-#            exits=exits, 
-#            #short_entries=exits,
-#            #short_exits=entries,
-#            init_cash=10000,
-#            #fees=0.001, 
-#            #freq='1D',
-#        )
-#        #date_range = df.index
-#        #fig = df["Close"].loc[date_range].rename('Close').vbt.plot()
-#        #supers["Final upperband"].loc[date_range].rename('Short').vbt.plot(fig=fig)
-#        #superl["Final Lowerband"].loc[date_range].rename('Long').vbt.plot(fig=fig)
-#        #fig.show()
-#        #pf.sharpe_ratio.vbt.heatmap(
-#        #    x_level='st_period', 
-#        #    y_level='st_multiplier',
-#        #    slider_level='symbol'
-#        #)
-#        print(pf.stats())
-#        assert True
-#    except ValueError:
-#        assert False
-
-
-

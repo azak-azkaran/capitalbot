@@ -6,8 +6,6 @@ import os
 import time
 from main_module import capital
 import pandas as pd
-import backtrader as bt
-from backtrader import plot as btplot
 from main_module import config
 
 
@@ -32,9 +30,6 @@ def download(symbol, interval, period="max", start_date=None, end_date=None):
 
 
 def mode_backtest(df, args):
-    cerebro = bt.Cerebro()
-    strats = cerebro.optstrategy(supertrend.SuperTrendStrategy, period=range(6, 15), multiplier=range(0,7))
-
     high = df["High"].to_numpy()
     low = df["Low"].to_numpy()
     close = df["Close"].to_numpy()
@@ -65,46 +60,6 @@ def mode_supertrend(df, args, debug=False, plot=True, ):
 
     if plot:
         plot_frame(df, entry=entry, exit=exit, filename=args.filename)
-    return re, None
-
-
-def _save_backtrader_fig(fig, args, index=0, debug=False):
-    if args.filename is None:
-        filename = (
-            args.symbol
-            + "_-_"
-            + args.dl_start.strftime(capital.CAPITAL_STRING_FORMAT)
-            + "_-_"
-            + args.dl_end.strftime(capital.CAPITAL_STRING_FORMAT)
-            + "_-_"
-            + str(index)
-            + ".png"
-        )
-    else:
-        filename = args.filename
-    filename = "plots/" + filename
-    if debug:
-        print("saving to file:" + filename) 
-    fig.savefig(filename)
-
-
-def save_backtrader_plot(pl, args, debug=False):
-    if type(pl) is list:
-        index = 1
-        for entry in pl:
-            if type(entry) is list:
-                for i in entry:
-                    _save_backtrader_fig(i, args, index, debug)
-                    index += 1
-            else:
-                _save_backtrader_fig(entry, args, index, debug)
-    else:
-        _save_backtrader_fig(
-            pl,
-            args,
-            index,
-            debug,
-        )
 
 
 def main(argv):
