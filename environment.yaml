@@ -25,3 +25,4 @@ dependencies:
   - jupyter-dash
   - tenacity
   - tabulate
+  - numba
