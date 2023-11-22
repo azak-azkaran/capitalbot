@@ -1,6 +1,5 @@
 import http.client
 import yfinance as yf
-import backtrader as bt
 import os
 import numpy as np
 from datetime import datetime, timedelta
@@ -91,13 +90,3 @@ def test_calculate_trend():
 
     plt.savefig(filename)
 
-
-def test_ema_backtrader():
-    cerebro = bt.Cerebro()
-    cerebro.addstrategy(movingaverages.EMAStrategy)
-    data = bt.feeds.PandasData(dataname=yf.download("TSLA", "2020-01-01", "2022-01-01"))
-    # Add the Data Feed to Cerebro
-    cerebro.adddata(data)
-    # Set our desired cash start
-    cerebro.broker.setcash(1000.0)
-    cerebro.run()

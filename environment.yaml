@@ -25,6 +25,3 @@ dependencies:
   - jupyter-dash
   - tenacity
   - tabulate
-  - pip:
-      - backtrader==1.9.78.123
-      - vectorbt==0.25.5
