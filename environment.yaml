@@ -7,7 +7,7 @@ dependencies:
   - black=23.10.1
   - jupyter=1.0.0
   - matplotlib=3.8.0
-  - numpy=1.26.0
+  - numpy
   - pip=23.3.1
   - pandas=2.1.2
   - pandoc=3.1.3
