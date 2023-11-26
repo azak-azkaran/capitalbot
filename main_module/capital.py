@@ -1,8 +1,8 @@
-import http.client
 import json
 import os
 import pandas as pd
 import requests
+from main_module import abstract
 
 
 CAPITAL_BACKEND = "api-capital.backend-capital.com"
@@ -13,8 +13,7 @@ CAPITAL_STRING_FORMAT = "%Y-%m-%dT%H:%M:%S"
 def _get_url(demo=True):
     if demo:
         return "https://" + CAPITAL_BACKEND_DEMO
-    else:
-        return "https://" + CAPITAL_BACKEND
+    return "https://" + CAPITAL_BACKEND
 
 
 def ping(security_token, cst_token, demo=True):
@@ -48,9 +47,9 @@ def download(
         + "&max="
         + str(interval)
     )
-    if start_date != None:
+    if start_date is not None:
         url += "&from=" + start_date
-    if end_date != None:
+    if end_date is not None:
         url += "&to=" + end_date
 
     res = requests.get(_get_url(demo) + url, payload, headers=headers)
@@ -123,9 +122,13 @@ def get_positions(security_token, cst, demo=True):
     res = requests.get(_get_url(demo) + "/api/v1/positions", headers=headers)
 
     jdata = res.json()
-
-    df = pd.DataFrame.from_dict(pd.json_normalize(jdata))
-    return df
+    positions = []
+    for i in jdata["positions"]:
+        pos = abstract.position(i["position"], i["market"])
+        if demo:
+            print(pos)
+        positions.append(pos)
+    return positions
 
 
 def set_positions(

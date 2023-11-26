@@ -89,4 +89,3 @@ def test_calculate_trend():
             )
 
     plt.savefig(filename)
-

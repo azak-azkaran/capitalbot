@@ -1,7 +1,8 @@
-from main_module import config 
+from main_module import config
 from datetime import datetime, timedelta
 
 TEST_CONFIG_PATH = "./tests/test_config.yaml"
+
 
 def test_parse_args():
     args = config.Config(filename=TEST_CONFIG_PATH)
@@ -13,6 +14,7 @@ def test_parse_args():
     assert args.atr_multiplier == 10
     assert args.dl_end != None
     assert args.dl_start != None
+
 
 def test_parse_period():
     conf = config.Config()
@@ -30,4 +32,3 @@ def test_parse_period():
     assert datetime.now() - start > timedelta(days=1)
 
     start, end = conf.parse_period("1mo")
-

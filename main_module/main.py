@@ -3,7 +3,6 @@ import numpy as np
 from indicators import supertrend
 import matplotlib.pyplot as plt
 import os
-import time
 from main_module import capital
 import pandas as pd
 from main_module import config
@@ -36,13 +35,18 @@ def mode_backtest(df, args):
     roi_list = supertrend.find_optimal_parameter(high=high, close=close, low=low)
 
     optimal_param = max(roi_list, key=lambda x: x[2])
-    #optimal_param = supertrend.find_optimal_parameter(df)
+    # optimal_param = supertrend.find_optimal_parameter(df)
     print(
         f"Best parameter {args.symbol} set: ATR Period={optimal_param[0]}, Multiplier={optimal_param[1]}, ROI={optimal_param[2]}%"
     )
 
 
-def mode_supertrend(df, args, debug=False, plot=True, ):
+def mode_supertrend(
+    df,
+    args,
+    debug=False,
+    plot=True,
+):
     if df.empty is True:
         raise ValueError("No values in DataFrame for backtesting")
     if df.index.size <= args.atr_period:
@@ -51,12 +55,22 @@ def mode_supertrend(df, args, debug=False, plot=True, ):
         print("Starting Mode Supertrend with: " + str(args))
         print(df)
 
-    st, st_lowerband, st_upperband  = supertrend.get_indicator(df, args.atr_period, args.atr_multiplier)
-    entry, exit, roi, earning = supertrend.backtest(df["Close"].to_numpy(), st["Supertrend"].to_numpy(), investment=args.investment, debug=False, commission=args.comission)
-    
+    st, st_lowerband, st_upperband = supertrend.get_indicator(
+        df, args.atr_period, args.atr_multiplier
+    )
+    entry, exit, roi, earning = supertrend.backtest(
+        df["Close"].to_numpy(),
+        st["Supertrend"].to_numpy(),
+        investment=args.investment,
+        debug=False,
+        commission=args.comission,
+    )
+
     df[FINAL_LOWER] = st_lowerband
     df[FINAL_UPPER] = st_upperband
-    print(f"Earning from investing ${args.investment} is ${round(earning,2)} (ROI = {roi}%)")
+    print(
+        f"Earning from investing ${args.investment} is ${round(earning,2)} (ROI = {roi}%)"
+    )
 
     if plot:
         plot_frame(df, entry=entry, exit=exit, filename=args.filename)
@@ -88,9 +102,62 @@ def main(argv):
 
 
 def mode_console(args):
-    #while True:
+    # while True:
     print("TODO: not yet implemented")
     print("dying")
+
+
+def plotly(df, filename, indicator=None, entry=None, exit=None, lower=None, Upper=None):
+    if not os.path.exists("plots"):
+        os.makedirs("plots")
+
+    filename = "plots/" + filename
+
+    fig = go.Figure(
+        data=[
+            go.Candlestick(
+                x=df.index,
+                open=df["Open"],
+                high=df["High"],
+                low=df["Low"],
+                close=df["Close"],
+            ),
+            go.Scatter(
+                x=df.index,
+                y=long,
+                mode="markers",
+                marker=dict(symbol="arrow", size=15, color="green"),
+            ),
+            go.Scatter(x=df.index, y=short, mode="markers"),
+        ]
+    )
+    fig.update_layout(xaxis_rangeslider_visible=False)
+    fig.update_xaxes(
+        rangebreaks=[
+            dict(bounds=[17, 9], pattern="hour"),  # hide hours outside of 9am-5pm
+        ]
+    )
+    fig.update_xaxes(
+        rangebreaks=[
+            dict(bounds=["sat", "sun"])  # hide weekends
+            # ,dict(values=["2015-12-25", "2023-01-01"])  # hide Christmas and New Year's
+        ]
+    )
+    fig = go.Figure([go.Scatter(x=df.index, y=rsi), go.Scatter(x=df.index, y=sma)])
+    fig.add_hline(y=70, line=dict(color="Green"))
+    fig.add_hline(y=30, line=dict(color="Red"))
+    # fig.update_xaxes(
+    #    rangebreaks=[
+    #        dict(bounds=["sat", "mon"]), #hide weekends
+    #        dict(values=["2015-12-25", "2016-01-01"])  # hide Christmas and New Year's
+    #    ]
+    # )
+    fig.update_xaxes(
+        rangebreaks=[
+            dict(bounds=[17, 9], pattern="hour"),  # hide hours outside of 9am-5pm
+        ]
+    )
+    fig.write_image(filename)
 
 
 def plot_frame(df, filename, entry=None, exit=None):
@@ -98,7 +165,7 @@ def plot_frame(df, filename, entry=None, exit=None):
         os.makedirs("plots")
 
     filename = "plots/" + filename
-    plt.figure(figsize=(16, 9), dpi=360)
+    fig = plt.figure(figsize=(16, 9), dpi=360)
     plt.plot(df["Close"], label="Close Price")
 
     if FINAL_LOWER in df.columns:
@@ -107,7 +174,11 @@ def plot_frame(df, filename, entry=None, exit=None):
     if FINAL_UPPER in df.columns:
         plt.plot(df[FINAL_UPPER], "r", label=FINAL_UPPER)
 
-    if type( entry ) == pd.DataFrame or type( entry ) == pd.Series or type(entry) == np.ndarray:
+    if (
+        type(entry) == pd.DataFrame
+        or type(entry) == pd.Series
+        or type(entry) == np.ndarray
+    ):
         for e in range(entry.shape[0]):
             plt.plot(
                 df.index[e],
@@ -119,7 +190,11 @@ def plot_frame(df, filename, entry=None, exit=None):
                 label="Entry",
             )
 
-    if type( exit ) == pd.DataFrame or type( exit ) == pd.Series or type(exit) == np.ndarray:
+    if (
+        type(exit) == pd.DataFrame
+        or type(exit) == pd.Series
+        or type(exit) == np.ndarray
+    ):
         for e in range(exit.shape[0]):
             plt.plot(
                 df.index[e],
@@ -131,6 +206,7 @@ def plot_frame(df, filename, entry=None, exit=None):
                 label="Exit",
             )
     plt.savefig(filename)
+    return fig
 
 
 def capitalize(config):

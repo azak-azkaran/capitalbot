@@ -25,7 +25,6 @@ def setup_mock(monkeypatch):
     monkeypatch.setattr(requests, "post", test_http_server.mocked_get)
 
 
-
 def test_download():
     df = main.download(TEST_SYMBOL, "1m")
     assert df.empty == False
@@ -39,9 +38,9 @@ def test_main():
     except ValueError:
         assert False
 
-    #assert os.path.isfile("./plots/foo.png")
-    #os.remove("./plots/foo.png")
-    #assert not os.path.isfile("./plots/foo.png")
+    # assert os.path.isfile("./plots/foo.png")
+    # os.remove("./plots/foo.png")
+    # assert not os.path.isfile("./plots/foo.png")
 
 
 def test_save():
@@ -101,7 +100,6 @@ def test_capitalize(setup_mock):
     assert os.path.isfile("./plots/test.png")
     os.remove("plots/test.png")
     assert not os.path.isfile("./plots/test.png")
-
 
 
 def test_calculate_ema():

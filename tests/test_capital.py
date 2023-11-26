@@ -1,10 +1,8 @@
-import http.client
 from main_module import capital
 import yaml
 import os
 import pytest
 import requests
-import json
 import mock_capital.mock_server as test_http_server
 
 
@@ -22,7 +20,7 @@ def setup():
     identifier = None
     if not os.path.exists("config.yaml"):
         print("No config file Probably Runner")
-        assert os.environ.get("CAPITAL_API_TOKEN") != None
+        assert os.environ.get("CAPITAL_API_TOKEN") is not None
         api_key = os.environ.get("CAPITAL_API_TOKEN")
         password = os.environ.get("CAPITAL_PASSWORD")
         identifier = os.environ.get("CAPITAL_IDENTIFIER")
@@ -31,8 +29,8 @@ def setup():
     else:
         with open("config.yaml", "r") as file:
             conf = yaml.safe_load(file)
-            assert conf != None
-            assert conf["capital"] != None
+            assert conf is not None
+            assert conf["capital"] is not None
 
             api_key = conf["capital"]["api_key"]
             password = conf["capital"]["password"]
@@ -42,11 +40,11 @@ def setup():
 
 def test__server_time(setup_mock):
     res = capital.server_time(True)
-    assert res != None
+    assert res is not None
     assert res.status_code == 200
 
     js = res.json()
-    assert js != None
+    assert js is not None
 
 
 def test__ping(setup_mock):
@@ -55,18 +53,18 @@ def test__ping(setup_mock):
     assert cst == "test"
 
     res = capital.ping(security, cst)
-    assert res != None
+    assert res is not None
     assert res.status_code == 200
 
     data = res.json()
-    assert data != None
+    assert data is not None
 
 
 def setup_session():
     api_key, password, identifier = setup()
-    assert api_key != None
-    assert password != None
-    assert identifier != None
+    assert api_key is not None
+    assert password is not None
+    assert identifier is not None
     _, _, security, cst = capital.create_session(
         api_key, password, identifier, demo=True
     )
@@ -75,18 +73,18 @@ def setup_session():
 
 def test__create_session(setup_mock):
     api_key, password, identifier = setup()
-    assert api_key != None
-    assert password != None
-    assert identifier != None
+    assert api_key is not None
+    assert password is not None
+    assert identifier is not None
 
     data, headers, security, cst = capital.create_session(
         api_key, password, identifier, demo=True
     )
 
-    assert data != None
-    assert headers != None
-    assert security != None
-    assert cst != None
+    assert data is not None
+    assert headers is not None
+    assert security is not None
+    assert cst is not None
 
 
 def test__download(setup_mock):
@@ -101,43 +99,43 @@ def test__download(setup_mock):
         end_date="2023-05-01T01:01:00",
     )
 
-    assert data != None
+    assert data is not None
     df, changed = capital.convert_download(data)
 
-    assert df.empty == False
+    assert df.empty is False
     assert df.index.size >= 10
 
-    assert changed.empty == False
+    assert changed.empty is False
     assert df.columns.size == 9
-    assert changed["Open"].empty == False
+    assert changed["Open"].empty is False
 
 
 def test__get_positions(setup_mock):
     security, cst = setup_session()
-    df = capital.get_positions(security, cst)
-    assert df.empty == False
-    assert df.index.size == 1
-    assert df.columns.size == 1
+    positions = capital.get_positions(security, cst)
+    assert len(positions) == 2
+    assert positions[0].symbol == "NATURALGAS"
+    assert positions[1].symbol == "US500"
 
 
 def test__log_out(setup_mock):
     security, cst = setup_session()
     res = capital.log_out(security, cst)
-    assert res != None
+    assert res is not None
     assert res.status_code == 200
 
     data = res.json()
-    assert data != None
+    assert data is not None
     assert data != ""
 
 
 def test__set_positions(setup_mock):
     security, cst = setup_session()
     res = capital.set_positions("SILVER", 1, 20, 27, security, cst)
-    assert res != None
+    assert res is not None
     assert res.status_code == 200
 
     answer = res.json()
-    assert answer != None
+    assert answer is not None
     print(answer)
-    assert answer["dealReference"] != None
+    assert answer["dealReference"] is not None

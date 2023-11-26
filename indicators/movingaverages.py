@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 
 
-
 def _calc(x):
     if x > 0.1:
         return True

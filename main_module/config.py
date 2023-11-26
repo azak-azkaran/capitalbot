@@ -1,6 +1,7 @@
 import yaml
 from datetime import datetime, timedelta
 
+
 class Config:
     symbol = ""
     atr_period = 0
@@ -62,7 +63,6 @@ class Config:
         self.dl_end = date - timedelta(hours=2)
         return self.dl_start, self.dl_end
 
-
     def parse_args(self, filename):
         with open(filename, "r") as file:
             conf = yaml.safe_load(file)
@@ -99,12 +99,11 @@ class Config:
 
             if conf.get("mode") != None:
                 self.mode = conf.get("mode")
-            
+
             if conf.get("debug") != None:
                 self.debug = conf.get("debug")
-            
-            if conf.get("commission") != None:
 
+            if conf.get("commission") != None:
                 self.commission = conf.get("commission")
             if conf.get("investment") != None:
                 self.investment = conf.get("investment")
