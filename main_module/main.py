@@ -6,6 +6,8 @@ import os
 from main_module import capital
 import pandas as pd
 from main_module import config
+from main_module import console
+import plotly.graph_objects as go
 
 
 FINAL_UPPER = "Final Upperband"
@@ -52,12 +54,17 @@ def mode_supertrend(
     if df.index.size <= args.atr_period:
         raise ValueError("Not enough values in DataFrame for backtesting")
     if debug:
-        print("Starting Mode Supertrend with: " + str(args))
+        print("Starting Mode Supertrend with: ")
+        print("Period: " + str(args.atr_period))
+        print("Multiplier: " + str(args.atr_multiplier))
+        print("Start: " + args.dl_start.strftime(capital.CAPITAL_STRING_FORMAT))
+        print("End: " + args.dl_end.strftime(capital.CAPITAL_STRING_FORMAT))
         print(df)
 
     st, st_lowerband, st_upperband = supertrend.get_indicator(
         df, args.atr_period, args.atr_multiplier
     )
+
     entry, exit, roi, earning = supertrend.backtest(
         df["Close"].to_numpy(),
         st["Supertrend"].to_numpy(),
@@ -102,8 +109,16 @@ def main(argv):
 
 
 def mode_console(args):
-    # while True:
-    print("TODO: not yet implemented")
+    while True:
+        try:
+            cst = console.Console()
+            if cst.run(args) is False:
+                return
+        except Exception as e:
+            print("Error: " + str(e))
+        except KeyboardInterrupt:
+            print("Closing console")
+            return
     print("dying")
 
 
@@ -124,11 +139,11 @@ def plotly(df, filename, indicator=None, entry=None, exit=None, lower=None, Uppe
             ),
             go.Scatter(
                 x=df.index,
-                y=long,
+                y=entry,
                 mode="markers",
                 marker=dict(symbol="arrow", size=15, color="green"),
             ),
-            go.Scatter(x=df.index, y=short, mode="markers"),
+            go.Scatter(x=df.index, y=exit, mode="markers"),
         ]
     )
     fig.update_layout(xaxis_rangeslider_visible=False)
@@ -143,9 +158,9 @@ def plotly(df, filename, indicator=None, entry=None, exit=None, lower=None, Uppe
             # ,dict(values=["2015-12-25", "2023-01-01"])  # hide Christmas and New Year's
         ]
     )
-    fig = go.Figure([go.Scatter(x=df.index, y=rsi), go.Scatter(x=df.index, y=sma)])
-    fig.add_hline(y=70, line=dict(color="Green"))
-    fig.add_hline(y=30, line=dict(color="Red"))
+    # fig = go.Figure([go.Scatter(x=df.index, y=rsi), go.Scatter(x=df.index, y=sma)])
+    # fig.add_hline(y=70, line=dict(color="Green"))
+    # fig.add_hline(y=30, line=dict(color="Red"))
     # fig.update_xaxes(
     #    rangebreaks=[
     #        dict(bounds=["sat", "mon"]), #hide weekends

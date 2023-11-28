@@ -68,44 +68,48 @@ class Config:
             conf = yaml.safe_load(file)
 
             self.symbol = conf.get("symbol")
-            if conf.get("atr") == None:
+            if conf.get("atr") is None:
                 raise ValueError("atr must be specified")
 
             self.atr_period = conf.get("atr").get("period")
-            if self.atr_period == None:
+            if self.atr_period is None:
                 raise ValueError("atr.period must be specified")
             self.atr_multiplier = conf.get("atr").get("multiplier")
-            if self.atr_multiplier == None:
+            if self.atr_multiplier is None:
                 raise ValueError("atr.multiplier must be specified")
 
-            if conf.get("capital") != None:
+            if conf.get("capital") is not None:
                 self.capital_api_key = conf.get("capital").get("api_key")
                 self.capital_password = conf.get("capital").get("password")
                 self.capital_identifier = conf.get("capital").get("identifier")
 
-            if conf.get("period") != None:
-                start, end = self.parse_period(conf.get("period"))
+            if conf.get("period") is not None:
+                self.dl_period = conf.get("period")
+                start, end = self.parse_period(self.dl_period)
                 self.dl_start = start
                 self.dl_end = end
 
-            if conf.get("start") != None:
+            if conf.get("interval") is not None:
+                self.dl_interval = conf.get("interval")
+
+            if conf.get("start") is not None:
                 self.dl_start = conf.get("start")
 
-            if conf.get("end") != None:
+            if conf.get("end") is not None:
                 self.dl_end = conf.get("end")
 
-            if conf.get("filename") != None:
+            if conf.get("filename") is not None:
                 self.filename = conf.get("filename")
 
-            if conf.get("mode") != None:
+            if conf.get("mode") is not None:
                 self.mode = conf.get("mode")
 
-            if conf.get("debug") != None:
+            if conf.get("debug") is not None:
                 self.debug = conf.get("debug")
 
-            if conf.get("commission") != None:
+            if conf.get("commission") is not None:
                 self.commission = conf.get("commission")
-            if conf.get("investment") != None:
+            if conf.get("investment") is not None:
                 self.investment = conf.get("investment")
-            if conf.get("openai") != None:
+            if conf.get("openai") is not None:
                 self.openai_api_key = conf.get("openai").get("api_key")
